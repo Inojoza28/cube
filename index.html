@@ -284,7 +284,10 @@
    * ------------------------------------------------------------------ */
   const SPACING = 1.03;
   const CUBIE_SIZE = 0.94;
-  const CUBIE_RADIUS = 0.028;
+  const CUBIE_RADIUS = 0.045;
+  const STICKER_SIZE = 0.87;
+  const STICKER_RADIUS = 0.095;
+  const STICKER_DEPTH = 0.018;
   const MOVE_DURATION = 520;   // ms per quarter/half turn
   const STEP_INTERVAL = 2500;  // ms between move starts in sequence mode
   const COMPLETE_VISIBLE_MS = 3000;
@@ -378,15 +381,54 @@
 
   function buildMaterials(x,y,z){
     // BoxGeometry face order: +x, -x, +y, -y, +z, -z
-    const mat = (hex) => new THREE.MeshStandardMaterial({ color: hex, roughness: 0.55, metalness: 0.03 });
-    return [
-      mat(x === 1  ? COLORS.R : COLORS.core),
-      mat(x === -1 ? COLORS.L : COLORS.core),
-      mat(y === 1  ? COLORS.U : COLORS.core),
-      mat(y === -1 ? COLORS.D : COLORS.core),
-      mat(z === 1  ? COLORS.F : COLORS.core),
-      mat(z === -1 ? COLORS.B : COLORS.core),
-    ];
+    const mat = () => new THREE.MeshStandardMaterial({ color: COLORS.core, roughness: 0.68, metalness: 0 });
+    return [mat(), mat(), mat(), mat(), mat(), mat()];
+  }
+
+  function createStickerGeometry(){
+    const half = STICKER_SIZE / 2;
+    const r = STICKER_RADIUS;
+    const shape = new THREE.Shape();
+    shape.moveTo(-half + r, -half);
+    shape.lineTo(half - r, -half);
+    shape.quadraticCurveTo(half, -half, half, -half + r);
+    shape.lineTo(half, half - r);
+    shape.quadraticCurveTo(half, half, half - r, half);
+    shape.lineTo(-half + r, half);
+    shape.quadraticCurveTo(-half, half, -half, half - r);
+    shape.lineTo(-half, -half + r);
+    shape.quadraticCurveTo(-half, -half, -half + r, -half);
+
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+      depth: STICKER_DEPTH,
+      steps: 1,
+      bevelEnabled: true,
+      bevelSegments: 2,
+      bevelSize: 0.012,
+      bevelThickness: 0.009,
+      curveSegments: 6
+    });
+    geometry.translate(0, 0, -STICKER_DEPTH / 2);
+    geometry.computeVertexNormals();
+    return geometry;
+  }
+
+  function addSticker(cubie, color, position, rotation){
+    const material = new THREE.MeshStandardMaterial({ color, roughness: 0.48, metalness: 0.015 });
+    const sticker = new THREE.Mesh(createStickerGeometry(), material);
+    sticker.position.copy(position);
+    sticker.rotation.set(rotation.x, rotation.y, rotation.z);
+    cubie.add(sticker);
+  }
+
+  function addExteriorStickers(cubie, x, y, z){
+    const offset = CUBIE_SIZE / 2 + 0.012;
+    if (x === 1) addSticker(cubie, COLORS.R, new THREE.Vector3(offset,0,0), new THREE.Euler(0,Math.PI/2,0));
+    if (x === -1) addSticker(cubie, COLORS.L, new THREE.Vector3(-offset,0,0), new THREE.Euler(0,-Math.PI/2,0));
+    if (y === 1) addSticker(cubie, COLORS.U, new THREE.Vector3(0,offset,0), new THREE.Euler(-Math.PI/2,0,0));
+    if (y === -1) addSticker(cubie, COLORS.D, new THREE.Vector3(0,-offset,0), new THREE.Euler(Math.PI/2,0,0));
+    if (z === 1) addSticker(cubie, COLORS.F, new THREE.Vector3(0,0,offset), new THREE.Euler(0,0,0));
+    if (z === -1) addSticker(cubie, COLORS.B, new THREE.Vector3(0,0,-offset), new THREE.Euler(0,Math.PI,0));
   }
 
   function createRoundedBoxGeometry(size, radius, segments){
@@ -417,10 +459,11 @@
 
   function rebuildSolvedCube(){
     // clear
-    cubies.forEach(c => {
-      c.geometry.dispose();
-      c.material.forEach(m=>m.dispose());
-    });
+    cubies.forEach(c => c.traverse(part => {
+      if (part.geometry) part.geometry.dispose();
+      if (Array.isArray(part.material)) part.material.forEach(m=>m.dispose());
+      else if (part.material) part.material.dispose();
+    }));
     cubeGroup.clear();
     cubies = [];
 
@@ -431,6 +474,7 @@
         for (let z=-1;z<=1;z++){
           const mesh = new THREE.Mesh(geo, buildMaterials(x,y,z));
           mesh.position.set(x*SPACING, y*SPACING, z*SPACING);
+          addExteriorStickers(mesh, x, y, z);
           mesh.userData.pos = { x, y, z };
           cubeGroup.add(mesh);
           cubies.push(mesh);
