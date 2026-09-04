@@ -3,18 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cubo Embaralhado | Embaralhamento de Cubo Mágico Passo a Passo</title>
+<title>Cubo Embaralhado</title>
 <meta name="description" content="Acompanhe sequências de embaralhamento de cubo mágico em 3D, automaticamente ou passo a passo, e reproduza cada movimento no seu cubo físico.">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#FAF9F6">
 <meta name="application-name" content="Cubo Embaralhado">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
-<meta property="og:title" content="Cubo Embaralhado | Embaralhamento de Cubo Mágico">
+<meta property="og:title" content="Cubo Embaralhado">
 <meta property="og:description" content="Visualize e acompanhe sequências de embaralhamento de cubo mágico em 3D, movimento por movimento.">
+<meta property="og:image" content="/imgs/cube.png">
+<meta property="og:image:width" content="1254">
+<meta property="og:image:height" content="1254">
+<meta property="og:image:alt" content="Cubo mágico colorido do Cubo Embaralhado">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Cubo Embaralhado | Embaralhamento de Cubo Mágico">
+<meta name="twitter:title" content="Cubo Embaralhado">
 <meta name="twitter:description" content="Treine sequências de cubo mágico com orientação visual em 3D.">
+<meta name="twitter:image" content="/imgs/cube.png">
+<meta name="twitter:image:alt" content="Cubo mágico colorido do Cubo Embaralhado">
+
+<link rel="icon" type="image/png" href="imgs/cube.png">
+<link rel="apple-touch-icon" href="imgs/cube.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,6 +57,8 @@
   "@type": "WebApplication",
   "name": "Cubo Embaralhado",
   "description": "Aplicação 3D para acompanhar sequências de embaralhamento de cubo mágico, automaticamente ou passo a passo.",
+  "image": "/imgs/cube.png",
+  "thumbnailUrl": "/imgs/cube.png",
   "applicationCategory": "EducationalApplication",
   "operatingSystem": "Any",
   "inLanguage": "pt-BR",
@@ -75,6 +86,28 @@
   }
   .ctl-btn:active:not(:disabled) { transform: scale(0.97); }
   .ctl-btn:disabled { opacity: .35; pointer-events: none; }
+
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    transition: transform .15s ease, background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .icon-btn:hover:not(:disabled) {
+    background-color: #FFFFFF;
+    border-color: #C9C5BB;
+    box-shadow: 0 4px 14px rgba(23, 23, 26, .07);
+    transform: translateY(-1px);
+  }
+  .icon-btn:active:not(:disabled) { transform: scale(.95); }
+  .icon-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .icon-btn-primary { background-color: #17171A; border-color: #17171A; color: #FAF9F6; }
+  .icon-btn-primary:hover:not(:disabled) { background-color: #2A2A2E; border-color: #2A2A2E; }
+  .icon-btn-stop { color: #DC3F3F; border-color: #F1C4C4; }
+  .icon-btn-stop:hover:not(:disabled) { background-color: #FFF7F7; border-color: #E9AAAA; }
 
   .start-btn {
     background-color: #315C4E;
@@ -251,6 +284,7 @@
    * ------------------------------------------------------------------ */
   const SPACING = 1.03;
   const CUBIE_SIZE = 0.94;
+  const CUBIE_RADIUS = 0.028;
   const MOVE_DURATION = 520;   // ms per quarter/half turn
   const STEP_INTERVAL = 2500;  // ms between move starts in sequence mode
   const COMPLETE_VISIBLE_MS = 3000;
@@ -355,6 +389,32 @@
     ];
   }
 
+  function createRoundedBoxGeometry(size, radius, segments){
+    const geometry = new THREE.BoxGeometry(size, size, size, segments, segments, segments);
+    const position = geometry.attributes.position;
+    const half = size / 2;
+    const inner = half - radius;
+    const vertex = new THREE.Vector3();
+    const anchor = new THREE.Vector3();
+
+    for (let i = 0; i < position.count; i++){
+      vertex.fromBufferAttribute(position, i);
+      anchor.set(
+        THREE.MathUtils.clamp(vertex.x, -inner, inner),
+        THREE.MathUtils.clamp(vertex.y, -inner, inner),
+        THREE.MathUtils.clamp(vertex.z, -inner, inner)
+      );
+      vertex.sub(anchor);
+      if (vertex.lengthSq() > 0) vertex.normalize().multiplyScalar(radius);
+      vertex.add(anchor);
+      position.setXYZ(i, vertex.x, vertex.y, vertex.z);
+    }
+
+    position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    return geometry;
+  }
+
   function rebuildSolvedCube(){
     // clear
     cubies.forEach(c => {
@@ -364,16 +424,13 @@
     cubeGroup.clear();
     cubies = [];
 
-    const geo = new THREE.BoxGeometry(CUBIE_SIZE, CUBIE_SIZE, CUBIE_SIZE);
-    const edgesBase = new THREE.EdgesGeometry(geo);
+    const geo = createRoundedBoxGeometry(CUBIE_SIZE, CUBIE_RADIUS, 6);
 
     for (let x=-1;x<=1;x++){
       for (let y=-1;y<=1;y++){
         for (let z=-1;z<=1;z++){
           const mesh = new THREE.Mesh(geo, buildMaterials(x,y,z));
           mesh.position.set(x*SPACING, y*SPACING, z*SPACING);
-          const edges = new THREE.LineSegments(edgesBase, new THREE.LineBasicMaterial({ color: 0x0c0c0d, transparent:true, opacity:0.35 }));
-          mesh.add(edges);
           mesh.userData.pos = { x, y, z };
           cubeGroup.add(mesh);
           cubies.push(mesh);
@@ -656,6 +713,33 @@
     return b;
   }
 
+  const CONTROL_ICONS = {
+    pause: '<rect x="7" y="5" width="3" height="14" rx="1"/><rect x="14" y="5" width="3" height="14" rx="1"/>',
+    play: '<path d="M8 5.5v13l10-6.5z"/>',
+    back: '<path d="M9 7l-5 5 5 5"/><path d="M5 12h8a6 6 0 0 1 6 6"/>',
+    restart: '<path d="M4 11a8 8 0 1 1 2.3 6"/><path d="M4 5v6h6"/>',
+    stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
+    unlock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M9 10V7a4 4 0 0 1 7-2.6"/>',
+    lock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    next: '<path d="M5 5.5v13L15 12z"/><path d="M19 6v12"/>'
+  };
+
+  function makeIconBtn(label, icon, onClick, opts){
+    opts = opts || {};
+    const b = document.createElement('button');
+    b.type = 'button';
+    let variant = 'bg-transparent text-ink border border-line';
+    if (opts.variant === 'primary') variant = 'icon-btn-primary border';
+    else if (opts.variant === 'stop') variant = 'icon-btn-stop bg-transparent border';
+    b.className = 'icon-btn ' + variant;
+    b.disabled = !!opts.disabled;
+    b.setAttribute('aria-label', label);
+    b.title = label;
+    b.innerHTML = `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CONTROL_ICONS[icon]}</svg>`;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
   function controlsDivider(){
     const d = document.createElement('span');
     d.className = 'w-px h-5 bg-line mx-0.5 self-center hidden sm:inline-block';
@@ -697,6 +781,7 @@
 
   function renderControls(){
     els.controls.innerHTML = '';
+    els.controls.classList.toggle('justify-center', appState !== 'input');
     const canGoBack = idx > 0 && !animating;
 
     if (appState === 'input'){
@@ -709,32 +794,29 @@
     }
 
     if (appState === 'playing'){
-      els.controls.appendChild(makeBtn('Pausar', onPause, { variant:'primary' }));
-      els.controls.appendChild(makeBtn('Voltar', onBack, { disabled:!canGoBack }));
-      els.controls.appendChild(makeBtn('Reiniciar', onRestart));
-      els.controls.appendChild(controlsDivider());
-      els.controls.appendChild(makeBtn('Parar', onStop, { variant:'stop' }));
+      els.controls.appendChild(makeIconBtn('Pausar', 'pause', onPause, { variant:'primary' }));
+      els.controls.appendChild(makeIconBtn('Voltar', 'back', onBack, { disabled:!canGoBack }));
+      els.controls.appendChild(makeIconBtn('Reiniciar', 'restart', onRestart));
+      els.controls.appendChild(makeIconBtn('Parar', 'stop', onStop, { variant:'stop' }));
       return;
     }
 
     if (appState === 'paused'){
-      els.controls.appendChild(makeBtn('Continuar', onContinue, { variant:'primary' }));
-      const lookButton = makeBtn(pausedFreeLook ? 'Travar cubo' : 'Destravar cubo', onTogglePausedLook);
+      els.controls.appendChild(makeIconBtn('Continuar', 'play', onContinue, { variant:'primary' }));
+      const lookButton = makeIconBtn(pausedFreeLook ? 'Travar cubo' : 'Destravar cubo', pausedFreeLook ? 'unlock' : 'lock', onTogglePausedLook);
       lookButton.setAttribute('aria-pressed', String(pausedFreeLook));
       els.controls.appendChild(lookButton);
-      els.controls.appendChild(makeBtn('Voltar', onBack, { disabled:!canGoBack }));
-      els.controls.appendChild(makeBtn('Reiniciar', onRestart));
-      els.controls.appendChild(controlsDivider());
-      els.controls.appendChild(makeBtn('Parar', onStop, { variant:'stop' }));
+      els.controls.appendChild(makeIconBtn('Voltar', 'back', onBack, { disabled:!canGoBack }));
+      els.controls.appendChild(makeIconBtn('Reiniciar', 'restart', onRestart));
+      els.controls.appendChild(makeIconBtn('Parar', 'stop', onStop, { variant:'stop' }));
       return;
     }
 
     if (appState === 'step-waiting'){
-      els.controls.appendChild(makeBtn('Próximo', onNext, { variant:'primary' }));
-      els.controls.appendChild(makeBtn('Voltar', onBack, { disabled:!canGoBack }));
-      els.controls.appendChild(makeBtn('Reiniciar', onRestart));
-      els.controls.appendChild(controlsDivider());
-      els.controls.appendChild(makeBtn('Parar', onStop, { variant:'stop' }));
+      els.controls.appendChild(makeIconBtn('Próximo movimento', 'next', onNext, { variant:'primary' }));
+      els.controls.appendChild(makeIconBtn('Voltar', 'back', onBack, { disabled:!canGoBack }));
+      els.controls.appendChild(makeIconBtn('Reiniciar', 'restart', onRestart));
+      els.controls.appendChild(makeIconBtn('Parar', 'stop', onStop, { variant:'stop' }));
       return;
     }
 
