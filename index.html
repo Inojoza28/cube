@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Cubo Guiado — embaralhamento assistido</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          sans: ['"Inter"', 'sans-serif'],
+        },
+        colors: {
+          ink: '#17171A',
+          muted: '#8A8579',
+          faint: '#B8B4A9',
+          line: '#E7E4DC',
+          paper: '#FAF9F6',
+        }
+      }
+    }
+  };
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+  html, body { background: #FAF9F6; }
+  * { -webkit-tap-highlight-color: transparent; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  #cube-canvas { touch-action: none; cursor: grab; }
+  #cube-canvas.locked { cursor: default; }
+  #cube-canvas:active { cursor: grabbing; }
+
+  .chip {
+    font-family: 'Space Grotesk', sans-serif;
+    transition: opacity .25s ease, transform .25s ease, background-color .25s ease, color .25s ease;
+  }
+
+  .ctl-btn {
+    transition: opacity .2s ease, background-color .15s ease, border-color .15s ease, transform .1s ease;
+  }
+  .ctl-btn:active:not(:disabled) { transform: scale(0.97); }
+  .ctl-btn:disabled { opacity: .35; pointer-events: none; }
+
+  .mode-opt {
+    color: #8A8579;
+  }
+  .mode-opt[aria-checked="true"] {
+    background: #17171A;
+    color: #FAF9F6;
+  }
+
+  #complete-check path {
+    stroke-dasharray: 40;
+    stroke-dashoffset: 40;
+    animation: checkDraw .5s ease .2s forwards;
+  }
+  #complete-check circle {
+    stroke-dasharray: 151;
+    stroke-dashoffset: 151;
+    animation: checkDraw .6s ease forwards;
+  }
+  @keyframes checkDraw {
+    to { stroke-dashoffset: 0; }
+  }
+  #complete-ring {
+    animation: ringPulse .9s ease-out .05s;
+  }
+  @keyframes ringPulse {
+    0% { transform: scale(0.7); opacity: 0; }
+    40% { opacity: .5; }
+    100% { transform: scale(1.7); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #complete-check path, #complete-check circle { animation: none; stroke-dashoffset: 0; }
+    #complete-ring { animation: none; }
+  }
+
+  .fade-el { transition: opacity .35s ease, transform .35s ease; }
+
+  @keyframes softPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .55; }
+  }
+  .countdown-num { animation: softPulse 1s ease-in-out infinite; }
+
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .rise-in { animation: riseIn .5s ease both; }
+
+  input:focus-visible, button:focus-visible, textarea:focus-visible {
+    outline: 2px solid #17171A;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .countdown-num { animation: none; }
+  }
+</style>
+</head>
+
+<body class="bg-paper text-ink font-sans min-h-screen">
+
+  <div class="mx-auto w-full max-w-[560px] px-5 sm:px-6 pt-8 pb-10 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="mb-5 shrink-0">
+      <h1 class="font-display text-[15px] font-medium tracking-tight text-ink">Cubo Guiado</h1>
+      <p class="text-[13px] text-muted mt-0.5">Reproduza um embaralhamento, passo a passo, no seu cubo físico.</p>
+    </header>
+
+    <!-- Controls (kept at the top, within easy reach) -->
+    <section id="controls" class="mb-5 flex flex-wrap items-center gap-2 shrink-0" aria-live="polite"></section>
+
+    <!-- Sequence input (visible while composing) -->
+    <section id="input-panel" class="mb-5 shrink-0">
+      <label for="seq-input" class="block text-[12px] text-muted mb-1.5">Sequência de embaralhamento</label>
+      <textarea id="seq-input" rows="2" spellcheck="false" autocomplete="off"
+        placeholder="Ex.: F' D U' L U R' B D' B U' R' L' U' B D' F' D' L U L R2 B' R'"
+        class="w-full resize-none bg-white border border-line rounded-lg px-3.5 py-3 text-[15px] font-display tracking-wide leading-relaxed placeholder:text-faint placeholder:font-sans placeholder:text-[13px] focus:border-ink transition-colors"></textarea>
+      <p id="seq-error" class="text-[12px] text-red-600 mt-1.5 hidden leading-snug"></p>
+
+      <div class="mt-4 flex items-center gap-2.5">
+        <div id="mode-select" class="inline-flex bg-white border border-line rounded-full p-0.5 shrink-0" role="radiogroup" aria-label="Forma de acompanhar o embaralhamento">
+          <button type="button" id="mode-opt-sequence" data-mode="sequence" role="radio"
+            class="mode-opt rounded-full px-3 py-1.5 text-[12px] font-medium tracking-wide transition-colors">Sequência</button>
+          <button type="button" id="mode-opt-step" data-mode="step" role="radio"
+            class="mode-opt rounded-full px-3 py-1.5 text-[12px] font-medium tracking-wide transition-colors">Passo a passo</button>
+        </div>
+        <p id="mode-caption" class="text-[12px] text-muted leading-snug"></p>
+      </div>
+    </section>
+
+    <!-- Sequence progress strip (visible once a run has begun) -->
+    <section id="strip-panel" class="mb-4 hidden shrink-0">
+      <div id="strip" class="flex gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
+    </section>
+
+    <!-- Cube stage -->
+    <section class="relative mx-auto w-full max-w-[420px] shrink-0">
+      <div id="cube-wrap" class="relative w-full aspect-square">
+        <canvas id="cube-canvas" class="w-full h-full block"></canvas>
+
+        <!-- Countdown overlay -->
+        <div id="countdown-overlay" class="absolute inset-0 hidden items-center justify-center pointer-events-none">
+          <span id="countdown-num" class="countdown-num font-display text-6xl font-light text-ink/80"></span>
+        </div>
+
+        <!-- Free-rotate hint -->
+        <p id="rotate-hint" class="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] text-muted tracking-wide select-none">
+          arraste para girar
+        </p>
+
+        <!-- Completion overlay -->
+        <div id="complete-overlay" class="absolute inset-0 hidden flex-col items-center justify-center text-center pointer-events-none">
+          <div class="relative w-14 h-14 flex items-center justify-center">
+            <span id="complete-ring" class="absolute inset-0 rounded-full border border-ink/25"></span>
+            <svg id="complete-check" viewBox="0 0 52 52" class="w-14 h-14">
+              <circle cx="26" cy="26" r="24" fill="none" stroke="#17171A" stroke-width="1.5" opacity="0.9"/>
+              <path fill="none" stroke="#17171A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                d="M15 27l7 7 15-15"/>
+            </svg>
+          </div>
+          <p class="font-display text-xl font-medium text-ink mt-4 rise-in" style="animation-delay:.15s">Concluído</p>
+          <p id="complete-sub" class="text-[13px] text-muted mt-1 rise-in" style="animation-delay:.3s"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Move status -->
+    <section id="status-panel" class="mt-6 mb-6 text-center hidden shrink-0">
+      <div class="flex items-baseline justify-center gap-3">
+        <span id="move-current" class="font-display text-5xl font-medium tracking-tight text-ink"></span>
+        <span id="move-next" class="text-[13px] text-muted"></span>
+      </div>
+      <div class="mt-4 max-w-[220px] mx-auto">
+        <div class="h-[3px] w-full bg-line rounded-full overflow-hidden">
+          <div id="progress-bar" class="h-full bg-ink rounded-full" style="width:0%; transition: width .35s ease;"></div>
+        </div>
+        <p id="progress-label" class="text-[12px] text-muted mt-2 tabular-nums"></p>
+      </div>
+    </section>
+
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ------------------------------------------------------------------ *
+   *  Constants & move table
+   * ------------------------------------------------------------------ */
+  const SPACING = 1.03;
+  const CUBIE_SIZE = 0.94;
+  const MOVE_DURATION = 520;   // ms per quarter/half turn
+  const STEP_INTERVAL = 2000;  // ms between move starts in sequence mode
+  const COUNTDOWN_MS = 1900;
+
+  const COLORS = {
+    U: 0xF7F7F5, // white
+    D: 0xFFD84D, // yellow
+    F: 0x3FA34D, // green
+    B: 0x2F6FED, // blue
+    R: 0xE0432B, // red
+    L: 0xFF8A1E, // orange
+    core: 0x111114
+  };
+
+  // face -> {axis, layer, angle(deg) for a CLOCKWISE quarter turn}
+  const MOVES = {
+    U: { axis: 'y', layer:  1, angle: -90 },
+    D: { axis: 'y', layer: -1, angle:  90 },
+    R: { axis: 'x', layer:  1, angle: -90 },
+    L: { axis: 'x', layer: -1, angle:  90 },
+    F: { axis: 'z', layer:  1, angle: -90 },
+    B: { axis: 'z', layer: -1, angle:  90 },
+  };
+
+  const TOKEN_RE = /^([UDLRFB])(2|'|’)?$/;
+
+  function easeInOutQuad(t){ return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
+  function easeInOutCubic(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
+  function delayCancelable(ms, isCanceled){
+    return new Promise(resolve=>{
+      let waited = 0;
+      const step = 40;
+      const iv = setInterval(()=>{
+        waited += step;
+        if (isCanceled() || waited >= ms){ clearInterval(iv); resolve(); }
+      }, step);
+    });
+  }
+
+  function parseSequence(raw){
+    const rawTokens = raw.trim().split(/\s+/).filter(Boolean);
+    if (rawTokens.length === 0) return { ok:false, error:'Digite ao menos um movimento.' };
+    const moves = [];
+    for (let i=0;i<rawTokens.length;i++){
+      const tok = rawTokens[i].replace('’',"'");
+      const m = TOKEN_RE.exec(tok);
+      if (!m){
+        return { ok:false, error:`Movimento inválido: "${rawTokens[i]}" (posição ${i+1}). Use letras F B R L U D, sozinhas ou seguidas de ' ou 2.` };
+      }
+      const face = m[1];
+      const suffix = m[2] ? m[2].replace('’',"'") : '';
+      const base = MOVES[face];
+      let angle = base.angle;
+      if (suffix === "'") angle = -angle;
+      else if (suffix === '2') angle = angle * 2;
+      const notation = face + (suffix === "'" ? '\u2032' : suffix);
+      moves.push({ face, suffix, axis: base.axis, layer: base.layer, angle, notation });
+    }
+    return { ok:true, moves };
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Three.js scene
+   * ------------------------------------------------------------------ */
+  const canvas = document.getElementById('cube-canvas');
+  const wrap = document.getElementById('cube-wrap');
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(4.4, 3.6, 5.3);
+  camera.lookAt(0,0,0);
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+  const key = new THREE.DirectionalLight(0xffffff, 0.55);
+  key.position.set(5, 8, 6);
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.28);
+  fill.position.set(-6, -3, -4);
+  scene.add(fill);
+
+  const orientationGroup = new THREE.Group(); // user free-look / reset-to-standard
+  const cubeGroup = new THREE.Group();        // holds the 27 cubies, logical solve state
+  orientationGroup.add(cubeGroup);
+  scene.add(orientationGroup);
+
+  let cubies = [];
+
+  function buildMaterials(x,y,z){
+    // BoxGeometry face order: +x, -x, +y, -y, +z, -z
+    const mat = (hex) => new THREE.MeshStandardMaterial({ color: hex, roughness: 0.55, metalness: 0.03 });
+    return [
+      mat(x === 1  ? COLORS.R : COLORS.core),
+      mat(x === -1 ? COLORS.L : COLORS.core),
+      mat(y === 1  ? COLORS.U : COLORS.core),
+      mat(y === -1 ? COLORS.D : COLORS.core),
+      mat(z === 1  ? COLORS.F : COLORS.core),
+      mat(z === -1 ? COLORS.B : COLORS.core),
+    ];
+  }
+
+  function rebuildSolvedCube(){
+    // clear
+    cubies.forEach(c => {
+      c.geometry.dispose();
+      c.material.forEach(m=>m.dispose());
+    });
+    cubeGroup.clear();
+    cubies = [];
+
+    const geo = new THREE.BoxGeometry(CUBIE_SIZE, CUBIE_SIZE, CUBIE_SIZE);
+    const edgesBase = new THREE.EdgesGeometry(geo);
+
+    for (let x=-1;x<=1;x++){
+      for (let y=-1;y<=1;y++){
+        for (let z=-1;z<=1;z++){
+          const mesh = new THREE.Mesh(geo, buildMaterials(x,y,z));
+          mesh.position.set(x*SPACING, y*SPACING, z*SPACING);
+          const edges = new THREE.LineSegments(edgesBase, new THREE.LineBasicMaterial({ color: 0x0c0c0d, transparent:true, opacity:0.35 }));
+          mesh.add(edges);
+          mesh.userData.pos = { x, y, z };
+          cubeGroup.add(mesh);
+          cubies.push(mesh);
+        }
+      }
+    }
+  }
+  rebuildSolvedCube();
+
+  function resizeRenderer(){
+    const size = wrap.clientWidth;
+    if (!size) return;
+    renderer.setSize(size, size, false);
+    camera.aspect = 1;
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resizeRenderer).observe(wrap);
+  resizeRenderer();
+
+  (function loop(){
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  })();
+
+  /* ------------------------------------------------------------------ *
+   *  Free rotation (drag) — only active while allowed
+   * ------------------------------------------------------------------ */
+  let dragEnabled = true;
+  let dragging = false;
+  let lastX = 0, lastY = 0;
+  const DRAG_SENS = 0.008;
+
+  function pointerDown(e){
+    if (!dragEnabled) return;
+    dragging = true;
+    const p = e.touches ? e.touches[0] : e;
+    lastX = p.clientX; lastY = p.clientY;
+  }
+  function pointerMove(e){
+    if (!dragging || !dragEnabled) return;
+    const p = e.touches ? e.touches[0] : e;
+    const dx = p.clientX - lastX, dy = p.clientY - lastY;
+    lastX = p.clientX; lastY = p.clientY;
+    const qy = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), dx*DRAG_SENS);
+    const qx = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), dy*DRAG_SENS);
+    orientationGroup.quaternion.premultiply(qy).premultiply(qx);
+    if (e.touches) e.preventDefault();
+  }
+  function pointerUp(){ dragging = false; }
+
+  canvas.addEventListener('mousedown', pointerDown);
+  window.addEventListener('mousemove', pointerMove);
+  window.addEventListener('mouseup', pointerUp);
+  canvas.addEventListener('touchstart', pointerDown, { passive:true });
+  window.addEventListener('touchmove', pointerMove, { passive:false });
+  window.addEventListener('touchend', pointerUp);
+
+  function setDragEnabled(v){
+    dragEnabled = v;
+    canvas.classList.toggle('locked', !v);
+    document.getElementById('rotate-hint').style.opacity = v ? '1' : '0';
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Layer turn animation
+   * ------------------------------------------------------------------ */
+  function rotatePos(pos, axis, angleDeg){
+    const rad = angleDeg * Math.PI/180;
+    const cos = Math.round(Math.cos(rad));
+    const sin = Math.round(Math.sin(rad));
+    let { x, y, z } = pos;
+    if (axis === 'x') return { x, y: y*cos - z*sin, z: y*sin + z*cos };
+    if (axis === 'y') return { x: x*cos + z*sin, y, z: -x*sin + z*cos };
+    return { x: x*cos - y*sin, y: x*sin + y*cos, z };
+  }
+
+  function playMove(move){
+    return new Promise(resolve=>{
+      const { axis, layer, angle } = move;
+      const layerCubies = cubies.filter(c => Math.round(c.userData.pos[axis]) === layer);
+      const pivot = new THREE.Group();
+      cubeGroup.add(pivot);
+      layerCubies.forEach(c => pivot.attach(c));
+
+      const targetRad = THREE.MathUtils.degToRad(angle);
+      const start = performance.now();
+
+      function frame(now){
+        const t = Math.min((now-start)/MOVE_DURATION, 1);
+        pivot.rotation[axis] = targetRad * easeInOutQuad(t);
+        if (t < 1){
+          requestAnimationFrame(frame);
+        } else {
+          layerCubies.forEach(c=>{
+            cubeGroup.attach(c);
+            c.userData.pos = rotatePos(c.userData.pos, axis, angle);
+            c.userData.pos.x = Math.round(c.userData.pos.x);
+            c.userData.pos.y = Math.round(c.userData.pos.y);
+            c.userData.pos.z = Math.round(c.userData.pos.z);
+            c.position.set(c.userData.pos.x*SPACING, c.userData.pos.y*SPACING, c.userData.pos.z*SPACING);
+          });
+          cubeGroup.remove(pivot);
+          resolve();
+        }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  function invertMove(move){
+    return { axis: move.axis, layer: move.layer, angle: -move.angle };
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  App state machine
+   * ------------------------------------------------------------------ */
+  const els = {
+    input: document.getElementById('seq-input'),
+    error: document.getElementById('seq-error'),
+    inputPanel: document.getElementById('input-panel'),
+    stripPanel: document.getElementById('strip-panel'),
+    strip: document.getElementById('strip'),
+    statusPanel: document.getElementById('status-panel'),
+    moveCurrent: document.getElementById('move-current'),
+    moveNext: document.getElementById('move-next'),
+    progressBar: document.getElementById('progress-bar'),
+    progressLabel: document.getElementById('progress-label'),
+    controls: document.getElementById('controls'),
+    countdownOverlay: document.getElementById('countdown-overlay'),
+    countdownNum: document.getElementById('countdown-num'),
+    completeOverlay: document.getElementById('complete-overlay'),
+    completeSub: document.getElementById('complete-sub'),
+    rotateHint: document.getElementById('rotate-hint'),
+    modeSequence: document.getElementById('mode-opt-sequence'),
+    modeStep: document.getElementById('mode-opt-step'),
+    modeCaption: document.getElementById('mode-caption'),
+  };
+
+  const MODE_CAPTIONS = {
+    sequence: 'Os movimentos avançam sozinhos, um a cada ~2s.',
+    step: 'Você avança um movimento por vez, no seu ritmo.',
+  };
+
+  let moves = [];
+  let idx = 0;
+  let mode = 'sequence'; // 'sequence' | 'step'
+  let appState = 'input'; // input | countdown | playing | paused | step-waiting | animating | completed | free
+  let animating = false;
+  let playToken = 0; // increments to cancel stale playback loops
+  let inputValid = false;
+
+  function setAppState(s){ appState = s; render(); }
+
+  function paintModeSelect(){
+    els.modeSequence.setAttribute('aria-checked', String(mode === 'sequence'));
+    els.modeStep.setAttribute('aria-checked', String(mode === 'step'));
+    els.modeCaption.textContent = MODE_CAPTIONS[mode];
+  }
+  els.modeSequence.addEventListener('click', ()=>{ mode = 'sequence'; paintModeSelect(); });
+  els.modeStep.addEventListener('click', ()=>{ mode = 'step'; paintModeSelect(); });
+  paintModeSelect();
+
+  els.input.addEventListener('input', ()=>{
+    const v = els.input.value;
+    if (!v.trim()){
+      inputValid = false;
+      els.error.classList.add('hidden');
+      render();
+      return;
+    }
+    const result = parseSequence(v);
+    if (result.ok){
+      els.error.classList.add('hidden');
+      inputValid = true;
+    } else {
+      els.error.textContent = result.error;
+      els.error.classList.remove('hidden');
+      inputValid = false;
+    }
+    render();
+  });
+
+  function onStartClick(){
+    const result = parseSequence(els.input.value);
+    if (!result.ok) return;
+    moves = result.moves;
+    idx = 0;
+    buildStrip();
+    els.stripPanel.classList.remove('hidden');
+    els.statusPanel.classList.remove('hidden');
+    setDragEnabled(false);
+    beginCountdown();
+  }
+
+  function buildStrip(){
+    els.strip.innerHTML = '';
+    moves.forEach((m, i)=>{
+      const chip = document.createElement('span');
+      chip.className = 'chip flex-none px-2 py-1 rounded-md text-[13px] border border-transparent text-faint';
+      chip.textContent = m.notation;
+      chip.dataset.i = i;
+      els.strip.appendChild(chip);
+    });
+  }
+
+  function updateStrip(){
+    const chips = els.strip.children;
+    for (let i=0;i<chips.length;i++){
+      const chip = chips[i];
+      chip.classList.remove('bg-ink','text-paper','text-faint','text-ink/40','opacity-40');
+      if (i < idx){
+        chip.className = 'chip flex-none px-2 py-1 rounded-md text-[13px] border border-transparent text-ink/30';
+      } else if (i === idx){
+        chip.className = 'chip flex-none px-2 py-1 rounded-md text-[13px] border border-ink bg-ink text-paper';
+        chip.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+      } else {
+        chip.className = 'chip flex-none px-2 py-1 rounded-md text-[13px] border border-transparent text-muted';
+      }
+    }
+  }
+
+  function updateStatus(){
+    if (idx >= moves.length){
+      els.moveCurrent.textContent = '—';
+      els.moveNext.textContent = '';
+    } else {
+      els.moveCurrent.textContent = moves[idx].notation;
+      els.moveNext.textContent = (idx+1 < moves.length) ? ('próximo ' + moves[idx+1].notation) : 'último movimento';
+    }
+    const total = moves.length;
+    const current = Math.min(idx+1, total);
+    els.progressLabel.textContent = total ? `${current} de ${total} movimentos` : '';
+    const pct = total ? Math.round((idx/total)*100) : 0;
+    els.progressBar.style.width = pct + '%';
+  }
+
+  function render(){
+    // panels
+    els.inputPanel.classList.toggle('hidden', appState !== 'input');
+    els.countdownOverlay.classList.toggle('hidden', appState !== 'countdown');
+    els.countdownOverlay.classList.toggle('flex', appState === 'countdown');
+    els.completeOverlay.classList.toggle('hidden', appState !== 'completed' && appState !== 'free');
+    els.completeOverlay.classList.toggle('flex', appState === 'completed' || appState === 'free');
+    els.rotateHint.style.opacity = (dragEnabled && (appState==='input' || appState==='free')) ? '1' : '0';
+
+    updateStrip();
+    updateStatus();
+    renderControls();
+  }
+
+  function makeBtn(label, onClick, opts){
+    opts = opts || {};
+    const b = document.createElement('button');
+    b.textContent = label;
+    let style = 'bg-white text-ink border border-line hover:border-ink/40';
+    if (opts.variant === 'primary') style = 'bg-ink text-paper';
+    else if (opts.variant === 'stop') style = 'bg-white text-red-600/90 border border-red-200 hover:border-red-300 hover:bg-red-50/60';
+    b.className = 'ctl-btn px-4 py-2 rounded-lg text-[13px] font-medium tracking-wide ' + style;
+    b.disabled = !!opts.disabled;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function controlsDivider(){
+    const d = document.createElement('span');
+    d.className = 'w-px h-5 bg-line mx-0.5 self-center hidden sm:inline-block';
+    d.setAttribute('aria-hidden', 'true');
+    return d;
+  }
+
+  function renderControls(){
+    els.controls.innerHTML = '';
+    const canGoBack = idx > 0 && !animating;
+
+    if (appState === 'input'){
+      els.controls.appendChild(makeBtn('Começar', onStartClick, { variant:'primary', disabled: !inputValid }));
+      return;
+    }
+
+    if (appState === 'countdown' || appState === 'animating'){
+      return; // no controls during motion, keep focus on the cube
+    }
+
+    if (appState === 'playing'){
+      els.controls.appendChild(makeBtn('Pausar', onPause, { variant:'primary' }));
+      els.controls.appendChild(makeBtn('Voltar', onBack, { disabled:!canGoBack }));
+      els.controls.appendChild(makeBtn('Reiniciar', onRestart));
+      els.controls.appendChild(controlsDivider());
+      els.controls.appendChild(makeBtn('Parar', onStop, { variant:'stop' }));
+      return;
+    }
+
+    if (appState === 'paused'){
+      els.controls.appendChild(makeBtn('Continuar', onContinue, { variant:'primary' }));
+      els.controls.appendChild(makeBtn('Voltar', onBack, { disabled:!canGoBack }));
+      els.controls.appendChild(makeBtn('Reiniciar', onRestart));
+      els.controls.appendChild(controlsDivider());
+      els.controls.appendChild(makeBtn('Parar', onStop, { variant:'stop' }));
+      return;
+    }
+
+    if (appState === 'step-waiting'){
+      els.controls.appendChild(makeBtn('Próximo', onNext, { variant:'primary' }));
+      els.controls.appendChild(makeBtn('Voltar', onBack, { disabled:!canGoBack }));
+      els.controls.appendChild(makeBtn('Reiniciar', onRestart));
+      els.controls.appendChild(controlsDivider());
+      els.controls.appendChild(makeBtn('Parar', onStop, { variant:'stop' }));
+      return;
+    }
+
+    if (appState === 'completed' || appState === 'free'){
+      els.controls.appendChild(makeBtn('Reiniciar', onRestart, { variant:'primary' }));
+      els.controls.appendChild(makeBtn('Nova sequência', onNewSequence));
+      if (appState === 'completed'){
+        els.controls.appendChild(makeBtn('Rotação livre', onFreeRotate));
+      }
+      return;
+    }
+  }
+
+  /* ---- actions ---- */
+  function onPause(){
+    setAppState('paused');
+  }
+  function onContinue(){
+    setAppState('playing');
+    runSequenceLoop();
+  }
+  async function onNext(){
+    if (animating || idx >= moves.length) return;
+    animating = true; setAppState('animating');
+    await playMove(moves[idx]);
+    idx++;
+    animating = false;
+    if (idx >= moves.length){ onComplete(); }
+    else { setAppState('step-waiting'); }
+  }
+  async function onBack(){
+    if (animating || idx <= 0) return;
+    animating = true; setAppState('animating');
+    await playMove(invertMove(moves[idx-1]));
+    idx--;
+    animating = false;
+    setAppState(mode === 'sequence' ? 'paused' : 'step-waiting');
+  }
+  function onRestart(){
+    playToken++; // cancel any running loop
+    rebuildSolvedCube();
+    orientationGroup.quaternion.identity();
+    idx = 0;
+    beginCountdown();
+  }
+  function onStop(){
+    playToken++;
+    rebuildSolvedCube();
+    orientationGroup.quaternion.identity();
+    idx = 0;
+    els.stripPanel.classList.add('hidden');
+    els.statusPanel.classList.add('hidden');
+    setDragEnabled(true);
+    setAppState('input');
+  }
+  function onNewSequence(){
+    playToken++;
+    rebuildSolvedCube();
+    orientationGroup.quaternion.identity();
+    moves = []; idx = 0;
+    els.input.value = '';
+    inputValid = false;
+    els.error.classList.add('hidden');
+    els.stripPanel.classList.add('hidden');
+    els.statusPanel.classList.add('hidden');
+    setDragEnabled(true);
+    setAppState('input');
+  }
+  function onFreeRotate(){
+    setDragEnabled(true);
+    setAppState('free');
+  }
+  function onComplete(){
+    els.completeSub.textContent = moves.length + ' movimentos realizados';
+    setDragEnabled(false);
+    setAppState('completed');
+  }
+
+  function beginCountdown(){
+    setAppState('countdown');
+    const startQuat = orientationGroup.quaternion.clone();
+    const endQuat = new THREE.Quaternion();
+    const start = performance.now();
+
+    function frame(now){
+      const t = Math.min((now-start)/COUNTDOWN_MS, 1);
+      orientationGroup.quaternion.slerpQuaternions(startQuat, endQuat, easeInOutCubic(t));
+      const remainingMs = COUNTDOWN_MS - (now-start);
+      els.countdownNum.textContent = remainingMs > 950 ? '2' : (remainingMs > 0 ? '1' : '');
+      if (t < 1){
+        requestAnimationFrame(frame);
+      } else {
+        orientationGroup.quaternion.copy(endQuat);
+        beginPlayback();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function beginPlayback(){
+    updateStatus();
+    if (mode === 'sequence'){
+      setAppState('playing');
+      runSequenceLoop();
+    } else {
+      setAppState('step-waiting');
+    }
+  }
+
+  async function runSequenceLoop(){
+    const token = playToken;
+    while (appState === 'playing' && idx < moves.length && token === playToken){
+      const t0 = performance.now();
+      animating = true;
+      await playMove(moves[idx]);
+      animating = false;
+      if (token !== playToken) return;
+      idx++;
+      if (idx >= moves.length){ onComplete(); return; }
+      render();
+      if (appState !== 'playing') return;
+      const elapsed = performance.now() - t0;
+      await delayCancelable(Math.max(0, STEP_INTERVAL - elapsed), ()=> appState !== 'playing' || token !== playToken);
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
