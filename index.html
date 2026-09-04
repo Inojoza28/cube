@@ -2,8 +2,19 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Cubo Guiado — embaralhamento assistido</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cubo Embaralhado | Embaralhamento de Cubo Mágico Passo a Passo</title>
+<meta name="description" content="Acompanhe sequências de embaralhamento de cubo mágico em 3D, automaticamente ou passo a passo, e reproduza cada movimento no seu cubo físico.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#FAF9F6">
+<meta name="application-name" content="Cubo Embaralhado">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Cubo Embaralhado | Embaralhamento de Cubo Mágico">
+<meta property="og:description" content="Visualize e acompanhe sequências de embaralhamento de cubo mágico em 3D, movimento por movimento.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cubo Embaralhado | Embaralhamento de Cubo Mágico">
+<meta name="twitter:description" content="Treine sequências de cubo mágico com orientação visual em 3D.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,6 +42,18 @@
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Cubo Embaralhado",
+  "description": "Aplicação 3D para acompanhar sequências de embaralhamento de cubo mágico, automaticamente ou passo a passo.",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "pt-BR",
+  "isAccessibleForFree": true
+}
+</script>
 
 <style>
   html, body { background: #FAF9F6; }
@@ -53,6 +76,32 @@
   .ctl-btn:active:not(:disabled) { transform: scale(0.97); }
   .ctl-btn:disabled { opacity: .35; pointer-events: none; }
 
+  .start-btn {
+    background-color: #315C4E;
+    color: #FFFFFF;
+    box-shadow: 0 1px 2px rgba(31, 72, 59, .12), 0 8px 24px rgba(31, 72, 59, .13);
+    transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, opacity .2s ease;
+  }
+  .start-btn:hover:not(:disabled) {
+    background-color: #294F43;
+    box-shadow: 0 2px 3px rgba(31, 72, 59, .14), 0 10px 28px rgba(31, 72, 59, .17);
+    transform: translateY(-1px);
+  }
+  .start-btn:active:not(:disabled) {
+    transform: translateY(0) scale(.992);
+    background-color: #24473C;
+    box-shadow: 0 1px 2px rgba(31, 72, 59, .12);
+  }
+  .start-btn:disabled {
+    background-color: #E3E8E3;
+    color: #78827C;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  .start-btn:disabled span { color: inherit; }
+  .start-btn .start-arrow { transition: transform .18s ease; }
+  .start-btn:hover:not(:disabled) .start-arrow { transform: translateX(3px); }
+
   .mode-opt {
     color: #8A8579;
   }
@@ -61,31 +110,23 @@
     color: #FAF9F6;
   }
 
+  #complete-overlay {
+    animation: completionIn .38s cubic-bezier(.2,.8,.2,1) both;
+  }
   #complete-check path {
-    stroke-dasharray: 40;
-    stroke-dashoffset: 40;
-    animation: checkDraw .5s ease .2s forwards;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: checkDraw .4s ease .12s forwards;
   }
-  #complete-check circle {
-    stroke-dasharray: 151;
-    stroke-dashoffset: 151;
-    animation: checkDraw .6s ease forwards;
-  }
-  @keyframes checkDraw {
-    to { stroke-dashoffset: 0; }
-  }
-  #complete-ring {
-    animation: ringPulse .9s ease-out .05s;
-  }
-  @keyframes ringPulse {
-    0% { transform: scale(0.7); opacity: 0; }
-    40% { opacity: .5; }
-    100% { transform: scale(1.7); opacity: 0; }
+  @keyframes checkDraw { to { stroke-dashoffset: 0; } }
+  @keyframes completionIn {
+    from { opacity: 0; transform: translate(-50%, 7px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    #complete-check path, #complete-check circle { animation: none; stroke-dashoffset: 0; }
-    #complete-ring { animation: none; }
+    #complete-overlay { animation: none; }
+    #complete-check path { animation: none; stroke-dashoffset: 0; }
   }
 
   .fade-el { transition: opacity .35s ease, transform .35s ease; }
@@ -109,25 +150,28 @@
 
   @media (prefers-reduced-motion: reduce) {
     .countdown-num { animation: none; }
+    .start-btn, .start-btn .start-arrow { transition: none; }
+  }
+
+  @media (max-width: 639px) {
+    #controls .ctl-btn { flex: 1 1 auto; }
+    #cube-wrap { margin-top: .25rem; }
   }
 </style>
 </head>
 
 <body class="bg-paper text-ink font-sans min-h-screen">
 
-  <div class="mx-auto w-full max-w-[560px] px-5 sm:px-6 pt-8 pb-10 min-h-screen flex flex-col">
+  <div class="mx-auto w-full max-w-[560px] px-5 sm:px-6 pt-6 sm:pt-8 pb-20 sm:pb-16 min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="mb-5 shrink-0">
-      <h1 class="font-display text-[15px] font-medium tracking-tight text-ink">Cubo Guiado</h1>
+    <header class="mb-6 shrink-0">
+      <h1 class="font-display text-[17px] font-medium tracking-tight text-ink">Cubo Embaralhado</h1>
       <p class="text-[13px] text-muted mt-0.5">Reproduza um embaralhamento, passo a passo, no seu cubo físico.</p>
     </header>
 
-    <!-- Controls (kept at the top, within easy reach) -->
-    <section id="controls" class="mb-5 flex flex-wrap items-center gap-2 shrink-0" aria-live="polite"></section>
-
     <!-- Sequence input (visible while composing) -->
-    <section id="input-panel" class="mb-5 shrink-0">
+    <section id="input-panel" class="mb-4 shrink-0">
       <label for="seq-input" class="block text-[12px] text-muted mb-1.5">Sequência de embaralhamento</label>
       <textarea id="seq-input" rows="2" spellcheck="false" autocomplete="off"
         placeholder="Ex.: F' D U' L U R' B D' B U' R' L' U' B D' F' D' L U L R2 B' R'"
@@ -145,8 +189,11 @@
       </div>
     </section>
 
+    <!-- Contextual controls -->
+    <section id="controls" class="mb-5 flex flex-wrap items-center gap-2 shrink-0" aria-live="polite"></section>
+
     <!-- Sequence progress strip (visible once a run has begun) -->
-    <section id="strip-panel" class="mb-4 hidden shrink-0">
+    <section id="strip-panel" class="mb-3 hidden shrink-0">
       <div id="strip" class="flex gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
     </section>
 
@@ -160,31 +207,29 @@
           <span id="countdown-num" class="countdown-num font-display text-6xl font-light text-ink/80"></span>
         </div>
 
-        <!-- Free-rotate hint -->
-        <p id="rotate-hint" class="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] text-muted tracking-wide select-none">
-          arraste para girar
-        </p>
-
         <!-- Completion overlay -->
-        <div id="complete-overlay" class="absolute inset-0 hidden flex-col items-center justify-center text-center pointer-events-none">
-          <div class="relative w-14 h-14 flex items-center justify-center">
-            <span id="complete-ring" class="absolute inset-0 rounded-full border border-ink/25"></span>
-            <svg id="complete-check" viewBox="0 0 52 52" class="w-14 h-14">
-              <circle cx="26" cy="26" r="24" fill="none" stroke="#17171A" stroke-width="1.5" opacity="0.9"/>
-              <path fill="none" stroke="#17171A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-                d="M15 27l7 7 15-15"/>
+        <div id="complete-overlay" class="absolute left-1/2 -translate-x-1/2 bottom-5 hidden items-center gap-3 rounded-full border border-line/90 bg-white/90 px-4 py-2.5 text-left shadow-[0_8px_30px_rgba(23,23,26,0.08)] backdrop-blur-sm pointer-events-none" role="status">
+          <div class="w-7 h-7 rounded-full bg-ink flex items-center justify-center shrink-0">
+            <svg id="complete-check" viewBox="0 0 28 28" class="w-5 h-5" aria-hidden="true">
+              <path fill="none" stroke="#FAF9F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                d="M8 14.5l4 4 8-9"/>
             </svg>
           </div>
-          <p class="font-display text-xl font-medium text-ink mt-4 rise-in" style="animation-delay:.15s">Concluído</p>
-          <p id="complete-sub" class="text-[13px] text-muted mt-1 rise-in" style="animation-delay:.3s"></p>
+          <div class="whitespace-nowrap">
+            <p class="font-display text-[14px] font-medium leading-tight text-ink">Concluído</p>
+            <p id="complete-sub" class="text-[11px] text-muted mt-0.5"></p>
+          </div>
         </div>
       </div>
+      <p id="rotate-hint" class="mt-1.5 text-center text-[11px] text-muted tracking-wide select-none transition-opacity duration-200">
+        Arraste para girar
+      </p>
     </section>
 
     <!-- Move status -->
-    <section id="status-panel" class="mt-6 mb-6 text-center hidden shrink-0">
+    <section id="status-panel" class="mt-4 sm:mt-5 mb-8 text-center hidden shrink-0">
       <div class="flex items-baseline justify-center gap-3">
-        <span id="move-current" class="font-display text-5xl font-medium tracking-tight text-ink"></span>
+        <span id="move-current" class="font-display text-4xl sm:text-5xl font-medium tracking-tight text-ink"></span>
         <span id="move-next" class="text-[13px] text-muted"></span>
       </div>
       <div class="mt-4 max-w-[220px] mx-auto">
@@ -207,7 +252,8 @@
   const SPACING = 1.03;
   const CUBIE_SIZE = 0.94;
   const MOVE_DURATION = 520;   // ms per quarter/half turn
-  const STEP_INTERVAL = 2000;  // ms between move starts in sequence mode
+  const STEP_INTERVAL = 2500;  // ms between move starts in sequence mode
+  const COMPLETE_VISIBLE_MS = 3000;
   const COUNTDOWN_MS = 1900;
 
   const COLORS = {
@@ -467,7 +513,7 @@
   };
 
   const MODE_CAPTIONS = {
-    sequence: 'Os movimentos avançam sozinhos, um a cada ~2s.',
+    sequence: 'Os movimentos avançam sozinhos, um a cada 2,5s.',
     step: 'Você avança um movimento por vez, no seu ritmo.',
   };
 
@@ -478,6 +524,17 @@
   let animating = false;
   let playToken = 0; // increments to cancel stale playback loops
   let inputValid = false;
+  let completionVisible = false;
+  let completionTimer = null;
+  let pausedFreeLook = false;
+
+  function clearCompletion(){
+    completionVisible = false;
+    if (completionTimer){
+      clearTimeout(completionTimer);
+      completionTimer = null;
+    }
+  }
 
   function setAppState(s){ appState = s; render(); }
 
@@ -508,6 +565,13 @@
       inputValid = false;
     }
     render();
+  });
+
+  els.input.addEventListener('keydown', e=>{
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && inputValid){
+      e.preventDefault();
+      onStartClick();
+    }
   });
 
   function onStartClick(){
@@ -569,9 +633,10 @@
     els.inputPanel.classList.toggle('hidden', appState !== 'input');
     els.countdownOverlay.classList.toggle('hidden', appState !== 'countdown');
     els.countdownOverlay.classList.toggle('flex', appState === 'countdown');
-    els.completeOverlay.classList.toggle('hidden', appState !== 'completed' && appState !== 'free');
-    els.completeOverlay.classList.toggle('flex', appState === 'completed' || appState === 'free');
-    els.rotateHint.style.opacity = (dragEnabled && (appState==='input' || appState==='free')) ? '1' : '0';
+    els.completeOverlay.classList.toggle('hidden', !completionVisible);
+    els.completeOverlay.classList.toggle('flex', completionVisible);
+    const showRotateHint = dragEnabled && (appState === 'input' || appState === 'free' || (appState === 'paused' && pausedFreeLook));
+    els.rotateHint.style.opacity = showRotateHint ? '1' : '0';
 
     updateStrip();
     updateStatus();
@@ -598,12 +663,44 @@
     return d;
   }
 
+  function makeStartBtn(){
+    const parsed = inputValid ? parseSequence(els.input.value) : null;
+    const count = parsed && parsed.ok ? parsed.moves.length : 0;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'start-btn w-full min-h-[52px] rounded-xl px-4 sm:px-5 flex items-center justify-between gap-4 bg-ink text-paper text-left';
+    b.disabled = !inputValid;
+    b.setAttribute('aria-describedby', 'mode-caption');
+
+    const label = document.createElement('span');
+    label.className = 'font-medium text-[14px] tracking-wide';
+    label.textContent = inputValid ? 'Começar sequência' : 'Digite uma sequência para começar';
+
+    const detail = document.createElement('span');
+    detail.className = 'flex items-center gap-2 shrink-0 text-[11px] text-paper/65 tabular-nums';
+    if (count){
+      const countLabel = document.createElement('span');
+      countLabel.className = 'hidden sm:inline';
+      countLabel.textContent = `${count} ${count === 1 ? 'movimento' : 'movimentos'}`;
+      detail.appendChild(countLabel);
+    }
+    const arrow = document.createElement('span');
+    arrow.className = 'start-arrow text-[18px] leading-none';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '→';
+    detail.appendChild(arrow);
+
+    b.append(label, detail);
+    b.addEventListener('click', onStartClick);
+    return b;
+  }
+
   function renderControls(){
     els.controls.innerHTML = '';
     const canGoBack = idx > 0 && !animating;
 
     if (appState === 'input'){
-      els.controls.appendChild(makeBtn('Começar', onStartClick, { variant:'primary', disabled: !inputValid }));
+      els.controls.appendChild(makeStartBtn());
       return;
     }
 
@@ -622,6 +719,9 @@
 
     if (appState === 'paused'){
       els.controls.appendChild(makeBtn('Continuar', onContinue, { variant:'primary' }));
+      const lookButton = makeBtn(pausedFreeLook ? 'Travar cubo' : 'Destravar cubo', onTogglePausedLook);
+      lookButton.setAttribute('aria-pressed', String(pausedFreeLook));
+      els.controls.appendChild(lookButton);
       els.controls.appendChild(makeBtn('Voltar', onBack, { disabled:!canGoBack }));
       els.controls.appendChild(makeBtn('Reiniciar', onRestart));
       els.controls.appendChild(controlsDivider());
@@ -650,9 +750,23 @@
 
   /* ---- actions ---- */
   function onPause(){
+    pausedFreeLook = false;
+    setDragEnabled(false);
     setAppState('paused');
   }
-  function onContinue(){
+  function onTogglePausedLook(){
+    pausedFreeLook = !pausedFreeLook;
+    setDragEnabled(pausedFreeLook);
+    render();
+  }
+  async function onContinue(){
+    if (animating) return;
+    pausedFreeLook = false;
+    setDragEnabled(false);
+    animating = true;
+    setAppState('animating');
+    await resetOrientation(480);
+    animating = false;
     setAppState('playing');
     runSequenceLoop();
   }
@@ -667,7 +781,10 @@
   }
   async function onBack(){
     if (animating || idx <= 0) return;
+    pausedFreeLook = false;
+    setDragEnabled(false);
     animating = true; setAppState('animating');
+    await resetOrientation(380);
     await playMove(invertMove(moves[idx-1]));
     idx--;
     animating = false;
@@ -675,6 +792,8 @@
   }
   function onRestart(){
     playToken++; // cancel any running loop
+    clearCompletion();
+    pausedFreeLook = false;
     rebuildSolvedCube();
     orientationGroup.quaternion.identity();
     idx = 0;
@@ -682,6 +801,8 @@
   }
   function onStop(){
     playToken++;
+    clearCompletion();
+    pausedFreeLook = false;
     rebuildSolvedCube();
     orientationGroup.quaternion.identity();
     idx = 0;
@@ -692,6 +813,8 @@
   }
   function onNewSequence(){
     playToken++;
+    clearCompletion();
+    pausedFreeLook = false;
     rebuildSolvedCube();
     orientationGroup.quaternion.identity();
     moves = []; idx = 0;
@@ -710,25 +833,53 @@
   function onComplete(){
     els.completeSub.textContent = moves.length + ' movimentos realizados';
     setDragEnabled(false);
+    clearCompletion();
+    completionVisible = true;
     setAppState('completed');
+    completionTimer = setTimeout(()=>{
+      completionVisible = false;
+      completionTimer = null;
+      render();
+    }, COMPLETE_VISIBLE_MS);
+  }
+
+  function resetOrientation(duration){
+    return new Promise(resolve=>{
+      const endQuat = new THREE.Quaternion();
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        orientationGroup.quaternion.copy(endQuat);
+        resolve();
+        return;
+      }
+      const startQuat = orientationGroup.quaternion.clone();
+      const start = performance.now();
+
+      function frame(now){
+        const t = Math.min((now-start)/duration, 1);
+        orientationGroup.quaternion.slerpQuaternions(startQuat, endQuat, easeInOutCubic(t));
+        if (t < 1){
+          requestAnimationFrame(frame);
+        } else {
+          orientationGroup.quaternion.copy(endQuat);
+          resolve();
+        }
+      }
+      requestAnimationFrame(frame);
+    });
   }
 
   function beginCountdown(){
+    setDragEnabled(false);
     setAppState('countdown');
-    const startQuat = orientationGroup.quaternion.clone();
-    const endQuat = new THREE.Quaternion();
     const start = performance.now();
 
     function frame(now){
-      const t = Math.min((now-start)/COUNTDOWN_MS, 1);
-      orientationGroup.quaternion.slerpQuaternions(startQuat, endQuat, easeInOutCubic(t));
-      const remainingMs = COUNTDOWN_MS - (now-start);
-      els.countdownNum.textContent = remainingMs > 950 ? '2' : (remainingMs > 0 ? '1' : '');
-      if (t < 1){
+      const elapsed = now - start;
+      els.countdownNum.textContent = elapsed < 950 ? '2' : (elapsed < COUNTDOWN_MS ? '1' : '');
+      if (elapsed < COUNTDOWN_MS){
         requestAnimationFrame(frame);
       } else {
-        orientationGroup.quaternion.copy(endQuat);
-        beginPlayback();
+        resetOrientation(420).then(beginPlayback);
       }
     }
     requestAnimationFrame(frame);
