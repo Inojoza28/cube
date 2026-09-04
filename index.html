@@ -621,7 +621,7 @@
   let moves = [];
   let idx = 0;
   let mode = 'sequence'; // 'sequence' | 'step'
-  let appState = 'input'; // input | countdown | playing | paused | step-waiting | animating | completed | free
+  let appState = 'input'; // input | aligning | countdown | playing | paused | step-waiting | animating | completed | free
   let animating = false;
   let playToken = 0; // increments to cancel stale playback loops
   let inputValid = false;
@@ -972,12 +972,19 @@
   function resetOrientation(duration){
     return new Promise(resolve=>{
       const endQuat = new THREE.Quaternion();
+      const startQuat = orientationGroup.quaternion.clone();
+      const angle = startQuat.angleTo(endQuat);
+      if (angle < 0.002){
+        orientationGroup.quaternion.copy(endQuat);
+        resolve();
+        return;
+      }
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){
         orientationGroup.quaternion.copy(endQuat);
         resolve();
         return;
       }
-      const startQuat = orientationGroup.quaternion.clone();
+      duration = Math.max(180, duration * Math.min(angle / Math.PI, 1));
       const start = performance.now();
 
       function frame(now){
@@ -994,8 +1001,10 @@
     });
   }
 
-  function beginCountdown(){
+  async function beginCountdown(){
     setDragEnabled(false);
+    setAppState('aligning');
+    await resetOrientation(480);
     setAppState('countdown');
     const start = performance.now();
 
@@ -1005,7 +1014,7 @@
       if (elapsed < COUNTDOWN_MS){
         requestAnimationFrame(frame);
       } else {
-        resetOrientation(420).then(beginPlayback);
+        beginPlayback();
       }
     }
     requestAnimationFrame(frame);
