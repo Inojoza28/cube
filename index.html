@@ -87,6 +87,29 @@
   .ctl-btn:active:not(:disabled) { transform: scale(0.97); }
   .ctl-btn:disabled { opacity: .35; pointer-events: none; }
 
+  .speed-control {
+    display:inline-flex;
+    align-items:center;
+    gap:.2rem;
+    padding:.22rem;
+    border:1px solid #E7E4DC;
+    border-radius:999px;
+    background:rgba(255,255,255,.72);
+  }
+  .speed-option {
+    min-width:38px;
+    min-height:32px;
+    padding:.28rem .45rem;
+    border:0;
+    border-radius:999px;
+    color:#8A8579;
+    background:transparent;
+    font:600 11px 'Space Grotesk',sans-serif;
+    transition:background-color .16s ease,color .16s ease,transform .16s ease;
+  }
+  .speed-option[aria-pressed="true"] { color:#FAF9F6; background:#315C4E; }
+  .speed-option:hover:not([aria-pressed="true"]) { color:#17171A; background:#F2F4F3; }
+
   .icon-btn {
     width: 44px;
     height: 44px;
@@ -190,18 +213,445 @@
     #controls .ctl-btn { flex: 1 1 auto; }
     #cube-wrap { margin-top: .25rem; }
   }
+
+  /* Timer / treino */
+  .app-tabs { display:flex; gap:.35rem; padding:.25rem; background:#fff; border:1px solid #E7E4DC; border-radius:999px; }
+  .app-tab { flex:1; border:0; border-radius:999px; padding:.62rem .8rem; color:#8A8579; font:500 12px 'Space Grotesk',sans-serif; transition:all .2s ease; }
+  .app-tab[aria-selected="true"] { background:#17171A; color:#FAF9F6; box-shadow:0 2px 8px rgba(23,23,26,.12); }
+  #timer-panel { display:none; }
+  body.timer-mode #input-panel, body.timer-mode #controls, body.timer-mode #strip-panel,
+  body.timer-mode #cube-wrap, body.timer-mode #status-panel { display:none !important; }
+  body.timer-mode #timer-panel { display:block; }
+  .timer-card { border:1px solid #E7E4DC; background:rgba(255,255,255,.78); border-radius:1.25rem; padding:1.1rem; box-shadow:0 12px 34px rgba(23,23,26,.04); }
+  .timer-scramble { font:500 15px/1.7 'Space Grotesk',sans-serif; letter-spacing:.035em; color:#17171A; min-height:3.4rem; }
+  .timer-display { font:500 clamp(3.8rem,16vw,7rem)/1 'Space Grotesk',sans-serif; letter-spacing:-.07em; font-variant-numeric:tabular-nums; color:#17171A; }
+  .timer-display.ready { color:#2F8A5A; }
+  .timer-display.running { color:#17171A; }
+  .timer-pad { min-height:13rem; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; user-select:none; touch-action:none; border:1px dashed #D7D4CB; border-radius:1rem; background:#FCFCFA; transition:border-color .2s,background .2s; }
+  .timer-pad:active { background:#F7F7F3; }
+  .timer-instruction { color:#8A8579; font-size:12px; margin-top:.65rem; }
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem; margin-top:.8rem; }
+  .stat-box { background:#fff; border:1px solid #E7E4DC; border-radius:.8rem; padding:.7rem .55rem; text-align:center; }
+  .stat-label { display:block; color:#8A8579; font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
+  .stat-value { display:block; margin-top:.2rem; color:#17171A; font:500 18px 'Space Grotesk',sans-serif; font-variant-numeric:tabular-nums; }
+  .timer-history { margin-top:1rem; max-height:12rem; overflow:auto; }
+  .history-row { display:flex; align-items:center; justify-content:space-between; padding:.55rem .15rem; border-bottom:1px solid #EEECE6; color:#5E5A53; font-size:12px; }
+  .history-row strong { color:#17171A; font:500 15px 'Space Grotesk',sans-serif; }
+  .timer-actions { display:flex; gap:.5rem; margin-top:.8rem; }
+  .timer-actions button { flex:1; }
+  .timer-status { min-height:1.1rem; text-align:center; font-size:11px; color:#8A8579; }
+  @media (max-width:639px){ .timer-card{padding:.85rem;} .timer-pad{min-height:12rem;} }
+
+
+  /* Refinamento visual do treino */
+  body.timer-mode { background:radial-gradient(circle at 50% -10%,rgba(49,92,78,.12),transparent 38%),#F2F4F3; }
+  body.timer-mode .app-tabs { box-shadow:0 8px 24px rgba(23,23,26,.06); }
+  body.timer-mode #timer-panel { animation:timerPanelIn .38s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes timerPanelIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  .timer-card { padding:1.35rem; background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(248,249,245,.9)); box-shadow:0 18px 48px rgba(23,23,26,.08); }
+  .timer-head { display:flex; align-items:center; justify-content:space-between; gap:.8rem; }
+  .timer-kicker { color:#315C4E; font-size:10px; font-weight:600; letter-spacing:.15em; text-transform:uppercase; }
+  .timer-subtitle { color:#8A8579; font-size:11px; margin-top:.18rem; }
+  .scramble-box { margin-top:.9rem; padding:.8rem .9rem; border:1px solid #E7E4DC; border-radius:.85rem; background:rgba(255,255,255,.72); }
+  .timer-scramble { min-height:0; font-size:15px; line-height:1.65; }
+  .timer-scramble-label { color:#8A8579; font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
+  .timer-pad { min-height:15.5rem; margin-top:1rem; border:1px solid #E2E4DC; background:radial-gradient(circle at 50% 42%,#fff, #F7F8F4 72%); box-shadow:inset 0 1px 0 rgba(255,255,255,.8); }
+  .timer-pad.ready { border-color:#8CC8A5; background:radial-gradient(circle at 50% 42%,#F6FFF8,#EEF9F1 72%); }
+  .timer-pad.running { border-color:#C9C5BB; }
+  .timer-display { font-weight:600; text-shadow:0 1px 0 rgba(255,255,255,.8); }
+  .timer-display.error { color:#D94747; }
+  .timer-state { display:inline-flex; align-items:center; gap:.35rem; padding:.28rem .55rem; border-radius:999px; background:#F0F3EE; color:#627267; font-size:10px; }
+  .timer-state::before { content:''; width:6px; height:6px; border-radius:50%; background:#9BA79D; }
+  .timer-state.ready { background:#EAF7EE; color:#2F8A5A; }
+  .timer-state.ready::before { background:#47A86D; }
+  .timer-state.running { background:#F1F1EF; color:#17171A; }
+  .timer-state.running::before { background:#17171A; animation:stateBlink 1s infinite; }
+  @keyframes stateBlink { 50%{opacity:.35} }
+  .stat-grid { gap:.65rem; margin-top:1rem; }
+  .stat-box { padding:.82rem .55rem; box-shadow:0 3px 12px rgba(23,23,26,.035); }
+  .stat-box:first-child { background:#F7FBF8; border-color:#DDEDE2; }
+  .stat-value { font-size:19px; }
+  .timer-actions { margin-top:1rem; }
+  .timer-actions button:first-child { background:#17171A; color:#FAF9F6; border-color:#17171A; }
+  .timer-actions button:first-child:hover { background:#315C4E; }
+  .timer-history { margin-top:1.1rem; padding-top:.7rem; border-top:1px solid #E7E4DC; }
+  .history-title { display:flex; justify-content:space-between; color:#8A8579; font-size:10px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:.15rem; }
+  .history-row { padding:.62rem .15rem; }
+  .history-row:first-of-type { color:#315C4E; }
+  @media (max-width:639px){ .timer-card{padding:1rem;} .timer-pad{min-height:13.5rem;} }
+
+
+  /* UX final: foco, hierarquia e controles */
+  .ctl-btn, .timer-actions button, #new-scramble { min-height:44px; border-radius:.75rem; font-weight:600; letter-spacing:.005em; transition:transform .16s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease,color .18s ease; }
+  .ctl-btn:hover:not(:disabled), .timer-actions button:hover:not(:disabled), #new-scramble:hover:not(:disabled) { transform:translateY(-1px); border-color:#B8B4A9; box-shadow:0 5px 16px rgba(23,23,26,.08); }
+  .ctl-btn:active:not(:disabled), .timer-actions button:active:not(:disabled), #new-scramble:active:not(:disabled) { transform:translateY(0) scale(.98); box-shadow:none; }
+  .ctl-btn:focus-visible, .timer-actions button:focus-visible, #new-scramble:focus-visible { outline:2px solid #315C4E; outline-offset:3px; }
+  #new-scramble { padding-inline:1rem; white-space:nowrap; }
+  #new-scramble::before { content:'↻'; margin-right:.35rem; font-size:15px; }
+  #apply-scramble::before { content:'↗'; margin-right:.45rem; font-size:16px; }
+  #clear-times::before { content:'×'; margin-right:.35rem; font-size:17px; font-weight:400; }
+  .timer-actions button:first-child { display:flex; align-items:center; justify-content:center; min-height:48px; }
+  .timer-actions button:last-child { color:#77736B; background:transparent; border-color:transparent; }
+  .timer-actions button:last-child:hover:not(:disabled) { color:#B14444; background:#FFF8F8; border-color:#F1C4C4; }
+  .timer-status { transition:opacity .2s ease; }
+  .timer-display { font-size:clamp(4.8rem,22vw,9.5rem); line-height:.92; }
+  .timer-pad { min-height:18rem; }
+  body.timer-running .timer-head, body.timer-running .scramble-box, body.timer-running .timer-instruction,
+  body.timer-running .timer-status, body.timer-running .stat-grid, body.timer-running .timer-actions,
+  body.timer-running .timer-history { display:none !important; }
+  body.timer-running #timer-panel { min-height:calc(100vh - 8rem); display:flex; align-items:center; }
+  body.timer-running .timer-card { width:100%; padding:0; border:0; box-shadow:none; background:transparent; }
+  body.timer-running .timer-pad { min-height:calc(100vh - 12rem); margin-top:0; border:0; background:transparent; box-shadow:none; }
+  body.timer-running .timer-display { color:#17171A; }
+  body.timer-running .timer-state { display:none; }
+  .history-row strong { letter-spacing:.02em; }
+  @media (max-width:639px){
+    .timer-actions { flex-direction:column; gap:.35rem; }
+    .timer-actions button:first-child { order:-1; }
+    .timer-pad { min-height:16rem; }
+    body.timer-running .timer-pad { min-height:calc(100vh - 10rem); }
+    body.timer-running .timer-display { font-size:clamp(4.5rem,23vw,7.5rem); }
+  }
+
+  /* Timer aberto: o tempo e os estados conduzem a experiência */
+  #timer-panel { width:100%; }
+  .timer-layout { padding:.5rem 0 2rem; }
+  .timer-layout .timer-head { padding:0 .15rem; }
+  .timer-layout .scramble-box { margin-top:1.5rem; padding:1rem 0 1.15rem; border:0; border-top:1px solid rgba(49,92,78,.14); border-bottom:1px solid rgba(49,92,78,.14); border-radius:0; background:transparent; }
+  .timer-layout .timer-pad { min-height:18rem; margin-top:.5rem; border:0; border-radius:0; background:transparent; box-shadow:none; cursor:default; }
+  .timer-layout .timer-display { font-size:clamp(5rem,23vw,9.5rem); font-weight:500; letter-spacing:-.075em; text-shadow:none; }
+  .timer-layout .timer-instruction { margin-top:1rem; font-size:12px; letter-spacing:.01em; }
+  .timer-controls { display:flex; justify-content:center; align-items:center; gap:.65rem; min-height:52px; margin:.25rem auto 0; }
+  .timer-control { min-width:112px; min-height:46px; padding:.7rem 1.1rem; border:1px solid #D7DAD5; border-radius:999px; background:rgba(255,255,255,.62); color:#4E554F; font-size:12px; font-weight:600; transition:transform .16s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease; }
+  .timer-control:hover { transform:translateY(-1px); background:#fff; border-color:#BFC7C1; box-shadow:0 7px 20px rgba(31,72,59,.08); }
+  .timer-control:active { transform:scale(.98); }
+  .timer-control.primary { background:#315C4E; border-color:#315C4E; color:#fff; box-shadow:0 8px 22px rgba(31,72,59,.15); }
+  .timer-control.primary:hover { background:#294F43; border-color:#294F43; }
+  .timer-control.quiet { min-width:46px; width:46px; padding:0; color:#777F79; }
+  .timer-control[hidden] { display:none; }
+  .timer-layout .timer-status { margin-top:.65rem; }
+  .timer-layout .stat-grid { margin-top:2rem; padding:1.1rem 0; gap:0; border-top:1px solid rgba(49,92,78,.14); border-bottom:1px solid rgba(49,92,78,.14); }
+  .timer-layout .stat-box { padding:.25rem .5rem; border:0; border-right:1px solid rgba(49,92,78,.12); border-radius:0; background:transparent; box-shadow:none; }
+  .timer-layout .stat-box:last-child { border-right:0; }
+  .timer-layout .stat-box:first-child { background:transparent; border-color:rgba(49,92,78,.12); }
+  .timer-layout .timer-actions { justify-content:center; margin-top:1.25rem; }
+  .timer-layout .timer-actions button { flex:0 1 auto; }
+  .timer-layout .timer-history { margin-top:1.6rem; }
+  body.timer-running header, body.timer-running .app-tabs { display:none; }
+  body.timer-running #timer-panel { min-height:100vh; align-items:center; }
+  body.timer-running .timer-layout { width:100%; padding:0; }
+  body.timer-running .timer-pad { min-height:auto; }
+  body.timer-running .timer-controls { margin-top:2rem; }
+  body.timer-running .timer-control { background:transparent; box-shadow:none; }
+  body.timer-running .timer-control.primary { background:#17171A; }
+  body.timer-paused .timer-display { color:#59615C; }
+  body.timer-finished .timer-display { color:#315C4E; }
+  @media (max-width:639px){
+    .timer-layout { padding-top:0; }
+    .timer-layout .timer-pad { min-height:15rem; }
+    .timer-layout .timer-display { font-size:clamp(4.5rem,24vw,7.2rem); }
+    .timer-controls { gap:.45rem; }
+    .timer-control { min-width:96px; padding-inline:.85rem; }
+    .timer-layout .timer-actions { flex-direction:row; flex-wrap:wrap; }
+    body.timer-running #timer-panel { min-height:calc(100vh - 3rem); }
+  }
+
+  /* Experiência de speed timer */
+  .timer-layout .timer-head { align-items:flex-start; }
+  .timer-layout .timer-subtitle { max-width:30rem; line-height:1.5; }
+  .timer-layout .scramble-box { margin-top:1.25rem; }
+  #new-scramble {
+    min-height:32px;
+    padding:.35rem .55rem;
+    border-color:transparent;
+    background:transparent;
+    color:#68716B;
+    font-size:11px;
+    box-shadow:none;
+  }
+  #new-scramble:hover:not(:disabled) { background:rgba(255,255,255,.58); border-color:rgba(49,92,78,.14); box-shadow:none; }
+  #new-scramble::before { margin-right:.28rem; font-size:13px; }
+  .timer-layout .timer-pad { cursor:pointer; touch-action:none; outline:none; }
+  .timer-layout .timer-pad:focus-visible { outline:2px solid rgba(49,92,78,.42); outline-offset:4px; border-radius:1rem; }
+  .timer-layout .timer-display { transition:color .16s ease, transform .18s ease; }
+  .timer-layout .timer-pad.holding .timer-display { color:#9A6B43; transform:scale(.985); }
+  .timer-layout .timer-pad.ready .timer-display { color:#2F8A5A; transform:scale(1.01); }
+  .timer-state { padding:0; background:transparent; }
+  .timer-state.ready, .timer-state.holding, .timer-state.running, .timer-state.finished { background:transparent; color:#68716B; }
+  .timer-state.holding::before { background:#B58252; }
+  .timer-state.finished::before { background:#315C4E; }
+  .timer-controls { min-height:42px; }
+  .timer-control.result-action { min-width:auto; min-height:38px; padding:.5rem .9rem; background:transparent; box-shadow:none; }
+  body.timer-running { height:100dvh; overflow:hidden; }
+  body.timer-running > div { min-height:0; padding:0; }
+  body.timer-running #timer-panel {
+    position:fixed;
+    inset:0;
+    z-index:50;
+    width:100%;
+    min-height:0;
+    padding:clamp(1rem,4vw,2.5rem);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    background:#F2F4F3;
+  }
+  body.timer-running .timer-layout { max-width:900px; }
+  body.timer-running .timer-pad { width:100%; min-height:min(70dvh,38rem); }
+  body.timer-running .timer-display { font-size:clamp(5.5rem,18vw,12rem); }
+  body.timer-running .timer-controls { display:none; }
+  @media (max-width:639px){
+    .timer-layout .timer-scramble { font-size:14px; }
+    body.timer-running #timer-panel { min-height:0; }
+    body.timer-running .timer-display { font-size:clamp(4.8rem,25vw,8rem); }
+  }
+
+  /* Composição do timer: histórico à esquerda, tempo no centro e scramble à direita. */
+  .app-shell { max-width:1180px; }
+  body.timer-mode .app-shell { max-width:1180px; }
+  .timer-layout {
+    display:grid;
+    grid-template-columns:minmax(190px,.72fr) minmax(0,1.42fr) minmax(210px,.86fr);
+    grid-template-rows:auto minmax(300px,1fr) auto auto;
+    align-items:start;
+    column-gap:clamp(1rem,2.4vw,2rem);
+    row-gap:.75rem;
+    padding:1rem 0 0;
+  }
+  .timer-layout .timer-head { grid-column:2; grid-row:1; }
+  .timer-layout .timer-pad { grid-column:2; grid-row:2; min-height:clamp(300px,48vh,460px); margin-top:0; }
+  .timer-layout .timer-controls { display:none; }
+  .timer-layout .timer-status { grid-column:2; grid-row:4; }
+  .timer-layout .stat-grid { grid-column:2; grid-row:5; margin-top:.6rem; }
+  .timer-layout .scramble-box { grid-column:3; grid-row:1 / span 2; align-self:stretch; height:100%; margin:0; padding:1.1rem; border:1px solid #E7E4DC; border-radius:1rem; background:rgba(255,255,255,.7); }
+  .timer-layout .timer-actions { grid-column:3; grid-row:2; z-index:1; align-self:end; margin:0; padding:0 1.1rem 1.1rem; display:grid; gap:.5rem; }
+  .timer-layout .timer-actions button { width:100%; }
+  .timer-layout .timer-history { grid-column:1; grid-row:1 / span 5; align-self:stretch; max-height:480px; margin:0; padding:1.15rem; border:1px solid #E7E4DC; border-radius:1rem; background:rgba(255,255,255,.7); }
+  .timer-layout .timer-history:empty { display:none; }
+  .timer-result-actions { grid-column:2; grid-row:3; display:none; justify-content:center; gap:.65rem; animation:resultIn .28s cubic-bezier(.2,.8,.2,1) both; }
+  .timer-result-actions button { min-width:132px; min-height:46px; padding:.65rem 1rem; border-radius:.75rem; font-size:13px; font-weight:600; transition:transform .16s ease, box-shadow .16s ease, background .16s ease; }
+  .timer-result-actions button:hover { transform:translateY(-1px); box-shadow:0 7px 18px rgba(23,23,26,.09); }
+  .timer-result-actions .save-time { color:#fff; border:1px solid #315C4E; background:#315C4E; }
+  .timer-result-actions .save-time:hover { background:#294F43; }
+  body.timer-finished .timer-result-actions { display:flex; }
+  body.timer-finished .timer-pad { animation:finishPulse .3s ease both; }
+  body.timer-finished .timer-instruction { color:#315C4E; }
+  @keyframes resultIn { from { opacity:0; transform:translateY(8px) scale(.98); } to { opacity:1; transform:none; } }
+  @keyframes finishPulse { from { opacity:.72; transform:scale(.985); } to { opacity:1; transform:none; } }
+  body.timer-finished .timer-head, body.timer-finished .scramble-box, body.timer-finished .stat-grid, body.timer-finished .timer-status, body.timer-finished .timer-history, body.timer-finished .timer-actions, body.timer-finished .timer-controls { display:none !important; }
+  body.timer-running .timer-result-actions { display:none !important; }
+  body.timer-running .timer-layout { display:block; max-width:900px; }
+  @media (max-width:800px) {
+    .timer-layout { display:flex; flex-direction:column; gap:1rem; padding-top:0; }
+    .timer-layout .timer-head, .timer-layout .timer-pad, .timer-layout .timer-controls, .timer-layout .timer-status, .timer-layout .stat-grid, .timer-layout .scramble-box, .timer-layout .timer-actions, .timer-layout .timer-history, .timer-result-actions { width:100%; }
+    .timer-layout .timer-history { max-height:260px; }
+    .timer-layout .scramble-box { min-height:0; }
+    .timer-result-actions { order:0; }
+  }
+  @media (max-width:639px) {
+    .app-shell { max-width:560px; }
+    .timer-result-actions { gap:.45rem; }
+    .timer-result-actions button { flex:1; min-width:0; }
+  }
+  /* Revisão do speed timer: tempo como foco, contexto em segundo plano. */
+  .timer-layout .scramble-box {
+    align-self:start;
+    height:auto;
+    min-height:0;
+    padding:1rem 1rem 4.6rem;
+    box-shadow:0 8px 22px rgba(23,23,26,.035);
+  }
+  .timer-layout .timer-scramble { font-size:14px; line-height:1.55; }
+  .timer-layout .timer-actions {
+    grid-row:1;
+    align-self:end;
+    padding:0 1rem 1rem;
+  }
+  .timer-layout .timer-actions button { min-height:38px; }
+  .timer-history-actions { grid-column:1; grid-row:6; margin-top:-.2rem; }
+  .timer-history-actions button { width:100%; min-height:36px; font-size:11px; }
+  .timer-display { font-size:clamp(5.5rem,18vw,11rem); }
+  body.timer-holding { height:100dvh; overflow:hidden; }
+  body.timer-holding > div { min-height:0; padding:0; }
+  body.timer-holding header, body.timer-holding .app-tabs { display:none; }
+  body.timer-holding #timer-panel {
+    position:fixed;
+    inset:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:clamp(1rem,4vw,2.5rem);
+    background:#F2F4F3;
+  }
+  body.timer-holding .timer-layout { display:block; width:100%; max-width:900px; padding:0; }
+  body.timer-holding .timer-head, body.timer-holding .scramble-box, body.timer-holding .timer-actions,
+  body.timer-holding .timer-history, body.timer-holding .timer-history-actions, body.timer-holding .stat-grid,
+  body.timer-holding .timer-status, body.timer-holding .timer-controls, body.timer-holding .timer-result-actions,
+  body.timer-holding .timer-instruction { display:none !important; }
+  body.timer-holding .timer-pad { width:100%; min-height:min(70dvh,38rem); margin:0; border:0; background:transparent; box-shadow:none; }
+  body.timer-holding .timer-display { font-size:clamp(5.5rem,18vw,12rem); }
+  body.timer-holding .timer-pad.holding .timer-display { color:#D94747; transform:scale(.985); }
+  body.timer-holding .timer-pad.ready .timer-display { color:#2F8A5A; transform:scale(1.01); }
+  body.timer-running .timer-history-actions, body.timer-finished .timer-history-actions { display:none !important; }
+  body.timer-finished { height:100dvh; overflow:hidden; }
+  body.timer-finished > div { min-height:0; padding:0; }
+  body.timer-finished header, body.timer-finished .app-tabs { display:none; }
+  body.timer-finished #timer-panel {
+    position:fixed;
+    inset:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:clamp(1rem,4vw,2.5rem);
+    background:#F2F4F3;
+  }
+  body.timer-finished .timer-layout { display:block; width:100%; max-width:900px; padding:0; }
+  body.timer-finished .timer-pad { min-height:min(70dvh,38rem); }
+  body.timer-finished .timer-display { font-size:clamp(5.5rem,18vw,12rem); }
+  @media (max-width:800px) {
+    .timer-history-actions { width:100%; margin-top:-.4rem; }
+    .timer-layout .scramble-box { padding-bottom:4.4rem; }
+  }
+  .timer-result-actions {
+    gap:.55rem;
+    padding:.2rem;
+    border:1px solid rgba(49,92,78,.12);
+    border-radius:1rem;
+    background:rgba(255,255,255,.56);
+  }
+  .timer-result-actions button {
+    min-width:124px;
+    min-height:42px;
+    border-radius:.7rem;
+    box-shadow:none;
+  }
+  .timer-result-actions button::before { margin-right:.42rem; font-size:14px; }
+  #timer-restart::before { content:'↻'; }
+  #timer-save::before { content:'✓'; }
+  .timer-result-actions .save-time:disabled { opacity:.78; cursor:wait; }
+  #apply-scramble {
+    min-height:40px;
+    border-color:#315C4E;
+    color:#fff;
+    background:#315C4E;
+    box-shadow:0 5px 14px rgba(49,92,78,.12);
+  }
+  #apply-scramble:hover:not(:disabled) { border-color:#294F43; background:#294F43; }
+  #apply-scramble.applied { border-color:#2F8A5A; background:#2F8A5A; transform:scale(.985); }
+  #apply-scramble:disabled { cursor:wait; opacity:1; }
+  @media (max-width:639px) {
+    .timer-result-actions { width:auto; align-self:center; }
+    .timer-result-actions button { min-width:0; }
+  }
+  .timer-layout .timer-actions { display:none; }
+  .timer-layout .scramble-box { padding:1rem; }
+  .scramble-card-actions { display:grid; grid-template-columns:1fr; gap:.45rem; margin-top:.8rem; }
+  .scramble-card-actions #apply-scramble, .scramble-card-actions #new-scramble { width:100%; }
+  .scramble-card-actions #new-scramble {
+    min-height:36px;
+    padding:.45rem .7rem;
+    border:1px solid #E7E4DC;
+    border-radius:.65rem;
+    color:#68716B;
+    background:rgba(255,255,255,.7);
+    font-size:11px;
+  }
+  .scramble-card-actions #new-scramble::before { content:'↻'; margin-right:.32rem; }
+  .timer-history-card {
+    grid-column:1;
+    grid-row:1 / span 6;
+    align-self:stretch;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    padding:1.05rem;
+    border:1px solid #E7E4DC;
+    border-radius:1rem;
+    background:rgba(255,255,255,.7);
+  }
+  .timer-history-card .timer-history {
+    display:block;
+    max-height:410px;
+    margin:0;
+    padding:0;
+    border:0;
+    background:transparent;
+  }
+  .timer-history-card .timer-history-actions { margin-top:auto; padding-top:.65rem; }
+  .timer-history-card .timer-history-actions button { width:100%; }
+  body.timer-holding .timer-history-card, body.timer-running .timer-history-card, body.timer-finished .timer-history-card { display:none !important; }
+  #rotate-hint { display:none !important; }
+  @media (max-width:800px) {
+    .timer-history-card { width:100%; }
+    .timer-history-card .timer-history { max-height:260px; }
+  }
 </style>
 </head>
 
 <body class="bg-[#F2F4F3] text-ink font-sans min-h-screen">
 
-  <div class="mx-auto w-full max-w-[560px] px-5 sm:px-6 pt-6 sm:pt-8 pb-20 sm:pb-16 min-h-screen flex flex-col">
+  <div class="app-shell mx-auto w-full max-w-[560px] px-5 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-10 min-h-screen flex flex-col">
 
     <!-- Header -->
     <header class="mb-6 shrink-0">
       <h1 class="font-display text-[17px] font-medium tracking-tight text-ink">Cubo Embaralhado</h1>
       <p class="text-[13px] text-muted mt-0.5">Reproduza um embaralhamento, passo a passo, no seu cubo físico.</p>
     </header>
+
+
+    <nav class="app-tabs mb-5" aria-label="Modo da aplicação">
+      <button id="tab-cube" class="app-tab" type="button" aria-selected="true">Cubo</button>
+      <button id="tab-timer" class="app-tab" type="button" aria-selected="false">Timer WCA 3×3</button>
+    </nav>
+
+    <section id="timer-panel" aria-label="Cronômetro de cubo mágico">
+      <div class="timer-layout">
+        <div class="timer-head">
+          <div><p class="timer-kicker">Speed timer · 3×3</p><p class="timer-subtitle">Segure Espaço, aguarde o verde e solte para iniciar.</p></div>
+          <span id="timer-state" class="timer-state">Pronto</span>
+        </div>
+        <div class="scramble-box">
+          <div class="flex items-center justify-between gap-3">
+            <span class="timer-scramble-label">Scramble atual</span>
+          </div>
+          <p id="timer-scramble" class="timer-scramble mt-1">Carregando scramble…</p>
+          <div class="scramble-card-actions">
+            <button id="apply-scramble" type="button" class="ctl-btn rounded-lg border border-line bg-white px-3 py-2 text-[12px] font-medium">Aplicar no cubo</button>
+            <button id="new-scramble" type="button" class="ctl-btn rounded-lg border border-line bg-white px-3 py-2 text-[12px] font-medium" title="Gerar outro scramble">Novo scramble</button>
+          </div>
+        </div>
+        <div id="timer-pad" class="timer-pad" role="button" tabindex="0" aria-label="Segure Espaço para preparar o cronômetro" aria-live="off">
+          <div id="timer-display" class="timer-display">0.00</div>
+          <p id="timer-instruction" class="timer-instruction">Segure Espaço para preparar</p>
+        </div>
+        <div class="timer-controls" aria-label="Controles do cronômetro">
+          <button id="timer-start" class="timer-control primary" type="button">Iniciar</button>
+          <button id="timer-pause" class="timer-control primary" type="button" hidden>Pausar</button>
+          <button id="timer-continue" class="timer-control primary" type="button" hidden>Continuar</button>
+          <button id="timer-finish" class="timer-control" type="button" hidden>Finalizar</button>
+          <button id="timer-reset" class="timer-control quiet" type="button" aria-label="Reiniciar cronômetro" title="Reiniciar" hidden>↻</button>
+        </div>
+        <div class="timer-result-actions" aria-label="Ações após finalizar">
+          <button id="timer-restart" type="button" class="border border-line bg-white text-ink">Reiniciar</button>
+          <button id="timer-save" type="button" class="save-time">Salvar tempo</button>
+        </div>
+        <p id="timer-status" class="timer-status mt-2"></p>
+        <div class="stat-grid">
+          <div class="stat-box"><span class="stat-label">Melhor</span><strong id="stat-best" class="stat-value">—</strong></div>
+          <div class="stat-box"><span class="stat-label">Média de 5</span><strong id="stat-ao5" class="stat-value">—</strong></div>
+          <div class="stat-box"><span class="stat-label">Solves</span><strong id="stat-count" class="stat-value">0</strong></div>
+        </div>
+        <aside class="timer-history-card" aria-label="Histórico de tempos">
+          <div id="timer-history" class="timer-history" aria-live="polite"></div>
+          <div class="timer-history-actions">
+          <button id="clear-times" type="button" class="ctl-btn rounded-lg border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-600">Apagar os tempos</button>
+          </div>
+        </aside>
+      </div>
+    </section>
 
     <!-- Sequence input (visible while composing) -->
     <section id="input-panel" class="mb-4 shrink-0">
@@ -325,6 +775,19 @@
         waited += step;
         if (isCanceled() || waited >= ms){ clearInterval(iv); resolve(); }
       }, step);
+    });
+  }
+
+  function waitForNextMove(startTime, isCanceled){
+    return new Promise(resolve=>{
+      const check = ()=>{
+        if (isCanceled() || performance.now() - startTime >= STEP_INTERVAL / sequenceSpeed){
+          resolve();
+          return;
+        }
+        setTimeout(check, 32);
+      };
+      check();
     });
   }
 
@@ -628,6 +1091,8 @@
   let completionVisible = false;
   let completionTimer = null;
   let pausedFreeLook = false;
+  let sequenceSpeed = 1;
+  const SPEED_OPTIONS = [1, 1.5, 2];
 
   function clearCompletion(){
     completionVisible = false;
@@ -644,8 +1109,8 @@
     els.modeStep.setAttribute('aria-checked', String(mode === 'step'));
     els.modeCaption.textContent = MODE_CAPTIONS[mode];
   }
-  els.modeSequence.addEventListener('click', ()=>{ mode = 'sequence'; paintModeSelect(); });
-  els.modeStep.addEventListener('click', ()=>{ mode = 'step'; paintModeSelect(); });
+  els.modeSequence.addEventListener('click', ()=>{ mode = 'sequence'; paintModeSelect(); render(); });
+  els.modeStep.addEventListener('click', ()=>{ mode = 'step'; paintModeSelect(); render(); });
   paintModeSelect();
 
   els.input.addEventListener('input', ()=>{
@@ -823,10 +1288,35 @@
     return b;
   }
 
+  function makeSpeedControl(){
+    const group = document.createElement('div');
+    group.className = 'speed-control';
+    group.setAttribute('role', 'group');
+    group.setAttribute('aria-label', 'Velocidade da sequência');
+    SPEED_OPTIONS.forEach(speed=>{
+      const option = document.createElement('button');
+      option.type = 'button';
+      option.className = 'speed-option';
+      option.textContent = String(speed).replace('.', ',') + '×';
+      option.setAttribute('aria-pressed', String(sequenceSpeed === speed));
+      option.setAttribute('aria-label', `Velocidade ${String(speed).replace('.', ',')} vezes`);
+      option.addEventListener('click', ()=>{
+        sequenceSpeed = speed;
+        renderControls();
+      });
+      group.appendChild(option);
+    });
+    return group;
+  }
+
   function renderControls(){
     els.controls.innerHTML = '';
     els.controls.classList.toggle('justify-center', appState !== 'input');
     const canGoBack = idx > 0 && !animating;
+
+    if (mode === 'sequence' && (appState === 'playing' || appState === 'paused')){
+      els.controls.appendChild(makeSpeedControl());
+    }
 
     if (appState === 'input'){
       els.controls.appendChild(makeStartBtn());
@@ -1042,13 +1532,256 @@
       if (idx >= moves.length){ onComplete(); return; }
       render();
       if (appState !== 'playing') return;
-      const elapsed = performance.now() - t0;
-      await delayCancelable(Math.max(0, STEP_INTERVAL - elapsed), ()=> appState !== 'playing' || token !== playToken);
+      await waitForNextMove(t0, ()=> appState !== 'playing' || token !== playToken);
     }
   }
 
   render();
 })();
 </script>
+
+<script>
+(function(){
+  'use strict';
+  const tabCube = document.getElementById('tab-cube');
+  const tabTimer = document.getElementById('tab-timer');
+  const scrambleEl = document.getElementById('timer-scramble');
+  const pad = document.getElementById('timer-pad');
+  const display = document.getElementById('timer-display');
+  const instruction = document.getElementById('timer-instruction');
+  const stateBadge = document.getElementById('timer-state');
+  const status = document.getElementById('timer-status');
+  const startButton = document.getElementById('timer-start');
+  const pauseButton = document.getElementById('timer-pause');
+  const continueButton = document.getElementById('timer-continue');
+  const finishButton = document.getElementById('timer-finish');
+  const resetButton = document.getElementById('timer-reset');
+  const restartResultButton = document.getElementById('timer-restart');
+  const saveResultButton = document.getElementById('timer-save');
+  const newScrambleButton = document.getElementById('new-scramble');
+  const input = document.getElementById('seq-input');
+  const apply = document.getElementById('apply-scramble');
+  const historyEl = document.getElementById('timer-history');
+  const storeKey = 'cubo-embaralhado-times-v1';
+  let times = JSON.parse(localStorage.getItem(storeKey) || '[]');
+  let scramble = '';
+  let phase = 'idle';
+  let holdTimer = null;
+  let activePress = false;
+  let spacePressed = false;
+  let saveFeedbackTimer = null;
+  let runStart = 0;
+  let finishedElapsed = 0;
+  let raf = null;
+  let worker = null;
+  let workerId = 0;
+  const fallbackFaces = ['R','L','U','D','F','B'];
+
+  function format(ms){ return (ms / 1000).toFixed(2); }
+  function average(list){ return list.length ? list.reduce((a,b)=>a+b,0)/list.length : null; }
+  function makeFallback(){
+    const out=[]; let prev='';
+    for(let i=0;i<20;i++){
+      let f; do { f=fallbackFaces[Math.floor(Math.random()*6)]; } while(f===prev); prev=f;
+      out.push(f + (Math.random()<.34 ? '2' : (Math.random()<.5 ? "'" : '')));
+    }
+    return out.join(' ');
+  }
+  function setScramble(value){
+    scramble = value || makeFallback();
+    scrambleEl.textContent = scramble;
+  }
+  function makeWorker(){
+    if(worker) return worker;
+    const url = 'https://unpkg.com/cstimer_module@0.1.5/cstimer_module.js';
+    worker = { pending:new Map(), ready:false };
+    fetch(url).then(r=>r.text()).then(code=>{
+      const blob = new Blob([code], {type:'text/javascript'});
+      const w = new Worker(URL.createObjectURL(blob));
+      worker.instance = w; worker.ready = true;
+      w.onmessage = e=>{ const [id, type, result]=e.data; const resolve=worker.pending.get(id); if(resolve){worker.pending.delete(id); resolve(result);} };
+      worker.pending.forEach((resolve,id)=>w.postMessage([id,'scramble',['333']]));
+    }).catch(()=>{ worker.failed=true; });
+    return worker;
+  }
+  function wcaScramble(){
+    const w=makeWorker();
+    return new Promise(resolve=>{
+      if(w.failed) return resolve(makeFallback());
+      const id=++workerId;
+      let settled=false;
+      const finish=value=>{
+        if(settled) return;
+        settled=true;
+        w.pending.delete(id);
+        resolve(value || makeFallback());
+      };
+      const send=()=>{
+        if(w.instance && !settled) w.instance.postMessage([id,'scramble',['333']]);
+      };
+      const fallbackTimer=setTimeout(()=>finish(makeFallback()), 1200);
+      w.pending.set(id, value=>{ clearTimeout(fallbackTimer); finish(value); });
+      if(w.ready) send();
+    });
+  }
+  function newScramble(){
+    resetTimer();
+    newScrambleButton.disabled=true;
+    newScrambleButton.textContent='Gerando…';
+    scrambleEl.textContent='Gerando scramble WCA…';
+    status.textContent='Preparando um novo scramble…';
+    wcaScramble().then(value=>{
+      setScramble(value);
+      newScrambleButton.disabled=false;
+      newScrambleButton.textContent='Novo scramble';
+      status.textContent='Novo scramble pronto';
+    });
+  }
+  function stats(){
+    const best=times.length ? Math.min(...times) : null;
+    document.getElementById('clear-times').hidden = !times.length;
+    const last5=times.slice(-5); const ao5=last5.length===5 ? average(last5) : null;
+    document.getElementById('stat-best').textContent=best===null?'—':format(best);
+    document.getElementById('stat-ao5').textContent=ao5===null?'—':format(ao5);
+    document.getElementById('stat-count').textContent=String(times.length);
+    historyEl.innerHTML='<div class="history-title"><span>Histórico</span><span>Mais recente primeiro</span></div>' + (times.slice().reverse().map((t,i)=>`<div class="history-row"><span>#${times.length-i}</span><strong>${format(t)} s</strong></div>`).join('') || '<p class="text-[12px] text-muted py-3 text-center">Seus tempos aparecerão aqui.</p>');
+  }
+  function save(){ localStorage.setItem(storeKey, JSON.stringify(times)); stats(); }
+  function currentElapsed(){ return phase === 'running' ? performance.now() - runStart : 0; }
+  function tick(){ if(phase!=='running') return; display.textContent=format(currentElapsed()); raf=requestAnimationFrame(tick); }
+  function setState(kind){
+    document.body.classList.toggle('timer-running', kind==='running');
+    document.body.classList.toggle('timer-holding', kind==='holding' || kind==='ready');
+    document.body.classList.toggle('timer-finished', kind==='finished');
+    stateBadge.className='timer-state '+kind;
+    stateBadge.textContent=kind==='running'?'Cronometrando':kind==='finished'?'Finalizado':'Pronto';
+    pad.classList.toggle('running',kind==='running');
+    pad.classList.toggle('holding',kind==='holding');
+    pad.classList.toggle('ready',kind==='ready');
+    display.classList.toggle('ready',kind==='ready');
+    startButton.hidden = true;
+    pauseButton.hidden = true;
+    continueButton.hidden = true;
+    finishButton.hidden = true;
+    resetButton.hidden = true;
+    resetButton.classList.toggle('result-action',kind==='finished');
+    resetButton.textContent = kind==='finished' ? 'Preparar próximo' : '↻';
+    resetButton.setAttribute('aria-label',kind==='finished'?'Preparar próximo tempo':'Reiniciar cronômetro');
+    instruction.textContent = kind==='running'?'Pressione Espaço para finalizar':kind==='holding'?'Continue segurando':kind==='ready'?'Solte para iniciar':kind==='finished'?'Escolha o próximo passo':'Segure Espaço para preparar';
+    pad.setAttribute('aria-label',instruction.textContent);
+  }
+
+  function resetTimer(){
+    if(raf) cancelAnimationFrame(raf);
+    if(holdTimer) clearTimeout(holdTimer);
+    raf = null;
+    holdTimer=null; activePress=false; spacePressed=false; finishedElapsed=0; phase='idle'; display.textContent='0.00'; status.textContent='';
+    display.classList.remove('running','error'); setState('idle');
+  }
+  function beginHold(){
+    if(phase==='running'){ finishTimer(); return; }
+    if(phase==='finished') return;
+    if(phase!=='idle' || activePress) return;
+    activePress=true; phase='holding'; display.textContent='0.00'; status.textContent=''; setState('holding');
+    holdTimer=setTimeout(()=>{
+      holdTimer=null;
+      if(activePress && phase==='holding'){ phase='ready'; setState('ready'); }
+    }, 550);
+  }
+  function releaseHold(){
+    if(!activePress) return;
+    activePress=false;
+    if(holdTimer){ clearTimeout(holdTimer); holdTimer=null; }
+    if(phase==='holding'){ phase='idle'; setState('idle'); return; }
+    if(phase==='ready') startTimer();
+  }
+  function startTimer(){
+    phase='running'; runStart=performance.now(); display.textContent='0.00'; status.textContent='';
+    display.classList.add('running'); setState('running'); tick();
+  }
+  function finishTimer(){
+    if(phase!=='running') return;
+    const elapsed=Math.round(currentElapsed()); if(raf)cancelAnimationFrame(raf); raf=null;
+    phase='finished'; finishedElapsed=elapsed;
+    display.textContent=format(elapsed); display.classList.remove('running'); status.textContent=''; setState('finished');
+  }
+  resetButton.addEventListener('click',resetTimer);
+  restartResultButton.addEventListener('click',resetTimer);
+  saveResultButton.addEventListener('click',()=>{
+    if(phase!=='finished' || !finishedElapsed) return;
+    times.push(finishedElapsed); save();
+    saveResultButton.disabled=true;
+    saveResultButton.textContent='Salvo';
+    clearTimeout(saveFeedbackTimer);
+    saveFeedbackTimer=setTimeout(()=>{
+      saveResultButton.disabled=false;
+      saveResultButton.textContent='Salvar tempo';
+      resetTimer();
+    }, 280);
+  });
+  pad.addEventListener('pointerdown',e=>{
+    if(e.button!==undefined && e.button!==0) return;
+    e.preventDefault();
+    pad.setPointerCapture?.(e.pointerId);
+    beginHold();
+  });
+  pad.addEventListener('pointerup',e=>{ e.preventDefault(); releaseHold(); });
+  pad.addEventListener('pointercancel',releaseHold);
+  window.addEventListener('keydown', e=>{
+    if(!document.body.classList.contains('timer-mode') || e.code!=='Space') return;
+    e.preventDefault();
+    if(spacePressed) return;
+    spacePressed=true;
+    if(phase==='running') finishTimer();
+    else beginHold();
+  });
+  window.addEventListener('keyup',e=>{
+    if(document.body.classList.contains('timer-mode') && e.code==='Space'){
+      e.preventDefault();
+      if(!spacePressed) return;
+      spacePressed=false;
+      releaseHold();
+    }
+  });
+  function cancelPreparation(){
+    spacePressed=false;
+    if(phase==='holding' || phase==='ready') resetTimer();
+  }
+  window.addEventListener('blur',cancelPreparation);
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden) cancelPreparation(); });
+  newScrambleButton.addEventListener('click',newScramble);
+  apply.addEventListener('click',()=>{
+    if(!scramble || apply.disabled) return;
+    apply.disabled=true;
+    apply.classList.add('applied');
+    const originalLabel=apply.textContent;
+    apply.textContent='Aplicado';
+    input.value=scramble;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    setTimeout(()=>{
+      apply.disabled=false;
+      apply.classList.remove('applied');
+      apply.textContent=originalLabel;
+      tabCube.click();
+    }, 180);
+  });
+  document.getElementById('clear-times').addEventListener('click',()=>{
+    if(!times.length || !window.confirm('Apagar todos os tempos do histórico?')) return;
+    times=[]; save(); resetTimer(); status.textContent='Histórico limpo';
+  });
+  function select(mode){
+    const timer=mode==='timer';
+    if(!timer && phase==='running') finishTimer();
+    document.body.classList.toggle('timer-mode',timer);
+    tabCube.setAttribute('aria-selected',String(!timer));
+    tabTimer.setAttribute('aria-selected',String(timer));
+    if(timer){stats();if(!scramble)newScramble();}
+  }
+  tabCube.addEventListener('click',()=>select('cube')); tabTimer.addEventListener('click',()=>select('timer'));
+  stats();
+  setState('idle');
+})();
+</script>
+
 </body>
 </html>
