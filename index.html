@@ -87,28 +87,40 @@
   .ctl-btn:active:not(:disabled) { transform: scale(0.97); }
   .ctl-btn:disabled { opacity: .35; pointer-events: none; }
 
+  /* Controle secundário de velocidade, alinhado aos botões da execução */
   .speed-control {
+    width:44px;
+    height:44px;
+    min-width:44px;
+    min-height:44px;
     display:inline-flex;
     align-items:center;
-    gap:.2rem;
-    padding:.22rem;
+    justify-content:center;
+    padding:0;
     border:1px solid #E7E4DC;
-    border-radius:999px;
-    background:rgba(255,255,255,.72);
-  }
-  .speed-option {
-    min-width:38px;
-    min-height:32px;
-    padding:.28rem .45rem;
-    border:0;
-    border-radius:999px;
-    color:#8A8579;
+    border-radius:9999px;
+    color:#68716B;
     background:transparent;
-    font:600 11px 'Space Grotesk',sans-serif;
-    transition:background-color .16s ease,color .16s ease,transform .16s ease;
+    font:600 12px 'Space Grotesk',sans-serif;
+    letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums;
+    transition:transform .15s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease,color .18s ease;
   }
-  .speed-option[aria-pressed="true"] { color:#FAF9F6; background:#315C4E; }
-  .speed-option:hover:not([aria-pressed="true"]) { color:#17171A; background:#F2F4F3; }
+  .speed-control:hover:not(:disabled) {
+    background:#FFFFFF;
+    border-color:#C9C5BB;
+    color:#17171A;
+    box-shadow:0 4px 14px rgba(23,23,26,.07);
+    transform:translateY(-1px);
+  }
+  .speed-control:active:not(:disabled) { transform:scale(.95); }
+  .speed-control[aria-pressed="true"] { color:#315C4E; background:#F4F8F5; border-color:#C9D9CE; }
+  .speed-control:focus-visible { outline:2px solid #315C4E; outline-offset:3px; }
+  .speed-control.is-changing { animation:speedChange .2s ease; }
+  @keyframes speedChange { 50% { transform:scale(1.06); } }
+  @media (prefers-reduced-motion: reduce) {
+    .speed-control { transition:none; animation:none; }
+  }
 
   .icon-btn {
     width: 44px;
@@ -1077,7 +1089,7 @@
   };
 
   const MODE_CAPTIONS = {
-    sequence: 'Os movimentos avançam sozinhos, um a cada 2,5s.',
+    sequence: 'Os movimentos avançam sozinhos; ajuste a velocidade no controle.',
     step: 'Você avança um movimento por vez, no seu ritmo.',
   };
 
@@ -1289,24 +1301,29 @@
   }
 
   function makeSpeedControl(){
-    const group = document.createElement('div');
-    group.className = 'speed-control';
-    group.setAttribute('role', 'group');
-    group.setAttribute('aria-label', 'Velocidade da sequência');
-    SPEED_OPTIONS.forEach(speed=>{
-      const option = document.createElement('button');
-      option.type = 'button';
-      option.className = 'speed-option';
-      option.textContent = String(speed).replace('.', ',') + '×';
-      option.setAttribute('aria-pressed', String(sequenceSpeed === speed));
-      option.setAttribute('aria-label', `Velocidade ${String(speed).replace('.', ',')} vezes`);
-      option.addEventListener('click', ()=>{
-        sequenceSpeed = speed;
-        renderControls();
-      });
-      group.appendChild(option);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'speed-control';
+    button.setAttribute('aria-pressed', 'true');
+    button.setAttribute('aria-live', 'polite');
+    button.title = 'Clique para alterar a velocidade da sequência automática';
+
+    const updateLabel = ()=>{
+      const label = String(sequenceSpeed).replace('.', ',') + '×';
+      button.textContent = label;
+      button.setAttribute('aria-label', `Velocidade atual ${label}. Clique para alterar`);
+    };
+    updateLabel();
+
+    button.addEventListener('click', ()=>{
+      const currentIndex = SPEED_OPTIONS.indexOf(sequenceSpeed);
+      sequenceSpeed = SPEED_OPTIONS[(currentIndex + 1) % SPEED_OPTIONS.length];
+      button.classList.remove('is-changing');
+      void button.offsetWidth;
+      button.classList.add('is-changing');
+      updateLabel();
     });
-    return group;
+    return button;
   }
 
   function renderControls(){
@@ -1314,17 +1331,17 @@
     els.controls.classList.toggle('justify-center', appState !== 'input');
     const canGoBack = idx > 0 && !animating;
 
-    if (mode === 'sequence' && (appState === 'playing' || appState === 'paused')){
-      els.controls.appendChild(makeSpeedControl());
-    }
-
     if (appState === 'input'){
       els.controls.appendChild(makeStartBtn());
       return;
     }
 
     if (appState === 'countdown' || appState === 'animating'){
-      return; // no controls during motion, keep focus on the cube
+      return; // sem controles durante a transição/movimento
+    }
+
+    if (mode === 'sequence' && (appState === 'playing' || appState === 'paused')){
+      els.controls.appendChild(makeSpeedControl());
     }
 
     if (appState === 'playing'){
