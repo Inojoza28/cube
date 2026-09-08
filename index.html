@@ -651,7 +651,7 @@
     <header class="app-header mb-6 shrink-0">
       <div class="app-header-copy">
         <p id="section-kicker" class="section-kicker">Treino de cubo mágico</p>
-        <h1 id="app-title" class="font-display text-[17px] font-medium tracking-tight text-ink">Curvo Timer</h1>
+        <h1 id="app-title" class="font-display text-[17px] font-medium tracking-tight text-ink">Cubo Timer</h1>
         <p id="app-subtitle" class="text-[13px] text-muted mt-0.5">Cronometre suas solves com foco, clareza e ritmo.</p>
       </div>
       <span id="section-badge" class="section-badge">WCA 3×3</span>
@@ -1745,7 +1745,7 @@
     document.getElementById('stat-best').textContent=best===null?'—':format(best);
     document.getElementById('stat-ao5').textContent=ao5===null?'—':format(ao5);
     document.getElementById('stat-count').textContent=String(times.length);
-    historyEl.innerHTML='<div class="history-title"><span>Histórico</span><span>Mais recente primeiro</span></div>' + (times.slice().reverse().map((t,i)=>`<div class="history-row"><span>#${times.length-i}</span><strong>${format(t)} s</strong></div>`).join('') || '<p class="text-[12px] text-muted py-3 text-center">Seus tempos aparecerão aqui.</p>');
+    historyEl.innerHTML='<div class="history-title"><span>Histórico</span></div>' + (times.slice().reverse().map((t,i)=>`<div class="history-row"><span>#${times.length-i}</span><strong>${format(t)} s</strong></div>`).join('') || '<p class="text-[12px] text-muted py-3 text-center">Seus tempos aparecerão aqui.</p>');
   }
   function save(){ localStorage.setItem(storeKey, JSON.stringify(times)); stats(); }
   function currentElapsed(){ return phase === 'running' ? performance.now() - runStart : 0; }
@@ -1880,17 +1880,17 @@
     tabTimer.setAttribute('aria-selected',String(timer));
 
     const context = timer ? {
-      title:'Curvo Timer',
+      title:'Cubo Timer',
       subtitle:'Cronometre suas solves com foco, clareza e ritmo.',
       kicker:'Treino de cubo mágico',
       badge:'WCA 3×3',
-      documentTitle:'Curvo Timer · WCA 3×3'
+      documentTitle:'Cubo Timer · WCA 3×3'
     } : {
-      title:'Curvo Embaralhado',
+      title:'Cubo Embaralhado',
       subtitle:'Visualize e acompanhe cada movimento no seu cubo físico.',
       kicker:'Visualizador de scramble',
       badge:'CUBO 3×3',
-      documentTitle:'Curvo Embaralhado'
+      documentTitle:'Cubo Embaralhado'
     };
     appTitle.textContent=context.title;
     appSubtitle.textContent=context.subtitle;
