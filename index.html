@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cubo Embaralhado</title>
-<meta name="description" content="Acompanhe sequências de embaralhamento de cubo mágico em 3D, automaticamente ou passo a passo, e reproduza cada movimento no seu cubo físico.">
+<title>Cubo Timer</title>
+<meta name="description" content="Cubo Timer: cronometre suas solves de cubo mágico 3×3, acompanhe scrambles WCA e organize seus tempos de forma simples e profissional.">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#F2F4F3">
-<meta name="application-name" content="Cubo Embaralhado">
+<meta name="application-name" content="Cubo Timer">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
-<meta property="og:title" content="Cubo Embaralhado">
-<meta property="og:description" content="Visualize e acompanhe sequências de embaralhamento de cubo mágico em 3D, movimento por movimento.">
+<meta property="og:title" content="Cubo Timer">
+<meta property="og:description" content="Cronometre suas solves de cubo mágico 3×3 com scramble WCA, histórico de tempos e uma experiência minimalista.">
 <meta property="og:image" content="/imgs/cube.png">
 <meta property="og:image:width" content="1254">
 <meta property="og:image:height" content="1254">
-<meta property="og:image:alt" content="Cubo mágico colorido do Cubo Embaralhado">
+<meta property="og:image:alt" content="Cubo mágico colorido do Cubo Timer">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Cubo Embaralhado">
-<meta name="twitter:description" content="Treine sequências de cubo mágico com orientação visual em 3D.">
+<meta name="twitter:title" content="Cubo Timer">
+<meta name="twitter:description" content="Cronometre solves de cubo mágico 3×3, acompanhe scrambles WCA e consulte seu histórico de tempos.">
 <meta name="twitter:image" content="/imgs/cube.png">
-<meta name="twitter:image:alt" content="Cubo mágico colorido do Cubo Embaralhado">
+<meta name="twitter:image:alt" content="Cubo mágico colorido do Cubo Timer">
 
 <link rel="icon" type="image/png" href="imgs/cube.png">
 <link rel="apple-touch-icon" href="imgs/cube.png">
@@ -55,11 +55,12 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Cubo Embaralhado",
-  "description": "Aplicação 3D para acompanhar sequências de embaralhamento de cubo mágico, automaticamente ou passo a passo.",
+  "name": "Cubo Timer",
+  "description": "Timer WCA 3×3 para cronometrar solves de cubo mágico, acompanhar scrambles e organizar históricos de tempo.",
   "image": "/imgs/cube.png",
   "thumbnailUrl": "/imgs/cube.png",
-  "applicationCategory": "EducationalApplication",
+  "applicationCategory": "SportsApplication",
+  "featureList": "Timer WCA 3×3, scrambles, histórico de tempos e visualização 3D do cubo",
   "operatingSystem": "Any",
   "inLanguage": "pt-BR",
   "isAccessibleForFree": true
@@ -777,25 +778,6 @@
   .scramble-meta-row .scramble-attempt { flex:none; }
   .scramble-meta-row .scramble-sync-state { margin-left:auto; max-width:15rem; }
   .scramble-box .scramble-inline { margin-top:.8rem; }
-  .copy-toast {
-    position:fixed;
-    top:1rem;
-    right:1rem;
-    z-index:100;
-    max-width:calc(100vw - 2rem);
-    padding:.62rem .82rem;
-    border:1px solid #C9DCCF;
-    border-radius:.7rem;
-    color:#285D45;
-    background:rgba(244,251,246,.96);
-    box-shadow:0 10px 28px rgba(23,23,26,.12);
-    font:600 12px 'Inter',sans-serif;
-    opacity:0;
-    pointer-events:none;
-    transform:translateY(-8px);
-    transition:opacity .22s ease, transform .22s ease;
-  }
-  .copy-toast.is-visible { opacity:1; transform:translateY(0); }
   .copy-icon.is-copied {
     width:auto;
     min-width:76px;
@@ -812,8 +794,31 @@
   @media (max-width:420px) {
     .scramble-meta-row { align-items:flex-start; flex-direction:column; gap:.45rem; }
     .scramble-meta-row .scramble-sync-state { margin-left:0; max-width:none; text-align:left; }
-    .copy-toast { top:.75rem; right:.75rem; }
   }
+
+
+  /* Tentativa: só aparece quando representa uma repetição real */
+  .scramble-attempt.is-hidden { display:none; }
+  .copy-toast {
+    position:fixed;
+    top:1rem;
+    right:1rem;
+    z-index:100;
+    max-width:calc(100vw - 2rem);
+    padding:.62rem .82rem;
+    border:1px solid #C9DCCF;
+    border-radius:.7rem;
+    color:#285D45;
+    background:rgba(244,251,246,.96);
+    box-shadow:0 10px 28px rgba(23,23,26,.12);
+    font:600 12px 'Inter',sans-serif;
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(-8px);
+    transition:opacity .22s ease,transform .22s ease;
+  }
+  .copy-toast.is-visible { opacity:1; transform:translateY(0); }
+  @media (max-width:420px) { .copy-toast { top:.75rem; right:.75rem; } }
 
 </style>
 </head>
@@ -851,7 +856,7 @@
             <span class="timer-scramble-label">Scramble desta solve</span>
           </div>
           <div class="scramble-meta-row">
-            <span id="scramble-attempt" class="scramble-attempt">1ª tentativa</span>
+            <span id="scramble-attempt" class="scramble-attempt is-hidden">1ª tentativa</span>
             <span id="scramble-sync-state" class="scramble-sync-state">Pronto para aplicar</span>
           </div>
           <div class="scramble-inline mt-1">
@@ -1896,6 +1901,7 @@
     scrambleUsed = false;
     scrambleAttemptNumber = 1;
     scrambleAttempt.textContent = '1ª tentativa';
+    scrambleAttempt.classList.add('is-hidden');
     scrambleEl.textContent = scramble;
     scrambleBox.classList.remove('is-used','is-retry');
     scrambleSyncState.textContent = 'Pronto para aplicar';
@@ -1914,6 +1920,7 @@
   function prepareRetry(){
     scrambleAttemptNumber += 1;
     scrambleAttempt.textContent = `${scrambleAttemptNumber}ª tentativa`;
+    scrambleAttempt.classList.remove('is-hidden');
     scrambleUsed = false;
     scrambleBox.classList.remove('is-used');
     scrambleBox.classList.add('is-retry');
@@ -2002,8 +2009,10 @@
   }
 
   function resetCopyButtons(){
+    clearTimeout(copyToastTimer);
+    copyToast.classList.remove('is-visible');
     copyFinishedScramble.classList.remove('is-copied');
-    copyFinishedScramble.innerHTML=copiedIconMarkup;
+    copyFinishedScramble.innerHTML=copyIconMarkup;
     copyFinishedScramble.setAttribute('aria-label','Copiar scramble da solve');
     copyFinishedScramble.title='Copiar scramble da solve';
     copyCurrentScramble.classList.remove('is-copied');
@@ -2100,6 +2109,9 @@
       saveResultButton.disabled=false;
       saveResultButton.textContent='Salvar tempo';
       resetTimer();
+      scrambleAttempt.classList.add('is-hidden');
+      scrambleSyncState.textContent='Solve salva — gere um novo scramble';
+      scrambleSyncState.className='scramble-sync-state is-stale';
     }, 280);
   });
   pad.addEventListener('pointerdown',e=>{
