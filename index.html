@@ -799,33 +799,32 @@
 
   /* Tentativa: só aparece quando representa uma repetição real */
   .scramble-attempt.is-hidden { display:none; }
-  .copy-toast {
-    position:fixed;
-    top:1rem;
-    right:1rem;
-    z-index:100;
-    max-width:calc(100vw - 2rem);
-    padding:.62rem .82rem;
-    border:1px solid #C9DCCF;
-    border-radius:.7rem;
-    color:#285D45;
-    background:rgba(244,251,246,.96);
-    box-shadow:0 10px 28px rgba(23,23,26,.12);
-    font:600 12px 'Inter',sans-serif;
-    opacity:0;
-    pointer-events:none;
-    transform:translateY(-8px);
-    transition:opacity .22s ease,transform .22s ease;
+
+
+  /* Estado do scramble sem tentativa: alinhamento natural e sem espaço vazio */
+  .scramble-meta-row .scramble-attempt.is-hidden + .scramble-sync-state { margin-left:0; }
+  .scramble-meta-row .scramble-sync-state { flex:none; max-width:100%; text-align:left; }
+  .scramble-meta-row { justify-content:flex-start; }
+  .scramble-sync-state { display:inline-flex; align-items:center; min-height:24px; padding:.25rem .55rem; color:#77736B; background:#F5F4F0; }
+  .scramble-sync-state.is-applied { color:#2F8A5A; background:#EEF7F0; }
+  .scramble-sync-state.is-stale { color:#A46F3D; background:#FBF5ED; }
+  .scramble-box .scramble-inline { align-items:flex-start; margin-top:.85rem; padding-top:.75rem; border-top:1px solid rgba(49,92,78,.08); }
+  @media (max-width:420px) {
+    .scramble-meta-row { flex-direction:row; align-items:center; }
+    .scramble-meta-row .scramble-sync-state { max-width:100%; }
   }
-  .copy-toast.is-visible { opacity:1; transform:translateY(0); }
-  @media (max-width:420px) { .copy-toast { top:.75rem; right:.75rem; } }
+
+
+  /* O estado textual do scramble permanece interno; a interface fica mais limpa */
+  .scramble-meta-row .scramble-sync-state { display:none !important; }
+  .scramble-meta-row:has(.scramble-attempt.is-hidden) { display:none; }
+  .scramble-meta-row { justify-content:flex-start; min-height:0; margin-top:.35rem; padding:0; border:0; }
+  .scramble-box .scramble-inline { margin-top:.85rem; }
 
 </style>
 </head>
 
 <body class="timer-mode bg-[#F2F4F3] text-ink font-sans min-h-screen">
-
-  <div id="copy-toast" class="copy-toast" role="status" aria-live="polite" aria-atomic="true">Copiado com sucesso!</div>
 
   <div class="app-shell mx-auto w-full max-w-[560px] px-5 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-10 min-h-screen flex flex-col">
 
@@ -1844,8 +1843,6 @@
   const scrambleSyncState = document.getElementById('scramble-sync-state');
   const scrambleAttempt = document.getElementById('scramble-attempt');
   const copyCurrentScramble = document.getElementById('copy-current-scramble');
-  const copyToast = document.getElementById('copy-toast');
-  let copyToastTimer = null;
   const copyIconMarkup = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>';
   const copiedIconMarkup = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>';
   const pad = document.getElementById('timer-pad');
@@ -2009,8 +2006,6 @@
   }
 
   function resetCopyButtons(){
-    clearTimeout(copyToastTimer);
-    copyToast.classList.remove('is-visible');
     copyFinishedScramble.classList.remove('is-copied');
     copyFinishedScramble.innerHTML=copyIconMarkup;
     copyFinishedScramble.setAttribute('aria-label','Copiar scramble da solve');
@@ -2064,12 +2059,6 @@
   }
   resetButton.addEventListener('click',resetTimer);
   restartResultButton.addEventListener('click',()=>{ resetTimer(); prepareRetry(); });
-  function showCopyToast(){
-    clearTimeout(copyToastTimer);
-    copyToast.classList.add('is-visible');
-    copyToastTimer=setTimeout(()=>copyToast.classList.remove('is-visible'), 1800);
-  }
-
   async function copyScramble(button, label){
     if(!scramble) return;
     try {
@@ -2086,7 +2075,6 @@
       button.innerHTML=copiedIconMarkup;
       button.setAttribute('aria-label',`Scramble ${label} copiado`);
       button.title='Copiado';
-      showCopyToast();
       setTimeout(()=>{
         button.classList.remove('is-copied');
         button.innerHTML=copyIconMarkup;
@@ -2099,6 +2087,10 @@
   }
   copyCurrentScramble.addEventListener('click',()=>copyScramble(copyCurrentScramble,'Copiar scramble atual'));
   copyFinishedScramble.addEventListener('click',()=>copyScramble(copyFinishedScramble,'Copiar scramble da solve'));
+  [copyCurrentScramble, copyFinishedScramble].forEach(button=>{
+    button.addEventListener('pointerdown',event=>event.stopPropagation());
+    button.addEventListener('pointerup',event=>event.stopPropagation());
+  });
   saveResultButton.addEventListener('click',()=>{
     if(phase!=='finished' || !finishedElapsed) return;
     times.push(finishedElapsed); save();
