@@ -600,23 +600,67 @@
     .timer-history-card { width:100%; }
     .timer-history-card .timer-history { max-height:260px; }
   }
+
+  /* Cabeçalho contextual e refinamentos de UX */
+  .app-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
+  .app-header-copy { min-width:0; }
+  .section-kicker { margin-bottom:.3rem; color:#315C4E; font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; }
+  .section-badge { flex:none; margin-top:.1rem; padding:.34rem .58rem; border:1px solid rgba(49,92,78,.16); border-radius:999px; color:#68716B; background:rgba(255,255,255,.58); font-size:10px; letter-spacing:.04em; }
+  #app-title { transition:opacity .2s ease, transform .2s ease; }
+  #app-subtitle { max-width:34rem; line-height:1.5; }
+  .app-tabs { box-shadow:0 4px 16px rgba(23,23,26,.035); }
+  .app-tab { min-height:38px; }
+  .app-tab:not([aria-selected="true"]):hover { color:#315C4E; background:#F4F8F5; }
+  .scramble-box { transition:border-color .2s ease, box-shadow .2s ease, background .2s ease; }
+  .scramble-box:focus-within { border-color:rgba(49,92,78,.3); box-shadow:0 8px 24px rgba(49,92,78,.06); }
+  .scramble-sync-state { transition:color .2s ease, background .2s ease; }
+  #apply-scramble { transition:transform .16s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, opacity .2s ease; }
+  #apply-scramble:not(:disabled):hover { transform:translateY(-1px); box-shadow:0 7px 18px rgba(49,92,78,.13); }
+  #apply-scramble.applied { box-shadow:0 5px 16px rgba(47,138,90,.16); }
+  .timer-pad { transition:border-color .2s ease, background .2s ease, transform .2s ease; }
+  .timer-pad:hover:not(.running) { border-color:#C9D9CE; }
+  .timer-pad:active:not(.running) { transform:scale(.995); }
+  .timer-status { min-height:1.35rem; }
+  @media (max-width:639px) {
+    .app-header { gap:.65rem; }
+    .section-badge { font-size:9px; padding:.3rem .48rem; }
+  }
+
+  /* Timer como área principal: hierarquia clara e contexto do scramble */
+  .scramble-heading { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+  .scramble-sync-state { color:#8A8579; font-size:10px; white-space:nowrap; }
+  .scramble-sync-state.is-applied { color:#2F8A5A; }
+  .scramble-sync-state.is-stale { color:#B58252; }
+  body.timer-mode header h1 { font-size:clamp(19px,3vw,24px); }
+  body.timer-mode header p { max-width:32rem; }
+  body.timer-mode .app-tabs { margin-bottom:clamp(1.25rem,3vw,2rem); }
+  body.timer-mode #timer-panel { min-height:calc(100vh - 9rem); }
+  @media (max-width:800px) {
+    .scramble-heading { align-items:flex-start; flex-direction:column; gap:.25rem; }
+    .scramble-sync-state { font-size:10px; }
+  }
+
 </style>
 </head>
 
-<body class="bg-[#F2F4F3] text-ink font-sans min-h-screen">
+<body class="timer-mode bg-[#F2F4F3] text-ink font-sans min-h-screen">
 
   <div class="app-shell mx-auto w-full max-w-[560px] px-5 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-10 min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="mb-6 shrink-0">
-      <h1 class="font-display text-[17px] font-medium tracking-tight text-ink">Cubo Embaralhado</h1>
-      <p class="text-[13px] text-muted mt-0.5">Reproduza um embaralhamento, passo a passo, no seu cubo físico.</p>
+    <header class="app-header mb-6 shrink-0">
+      <div class="app-header-copy">
+        <p id="section-kicker" class="section-kicker">Treino de cubo mágico</p>
+        <h1 id="app-title" class="font-display text-[17px] font-medium tracking-tight text-ink">Curvo Timer</h1>
+        <p id="app-subtitle" class="text-[13px] text-muted mt-0.5">Cronometre suas solves com foco, clareza e ritmo.</p>
+      </div>
+      <span id="section-badge" class="section-badge">WCA 3×3</span>
     </header>
 
 
-    <nav class="app-tabs mb-5" aria-label="Modo da aplicação">
-      <button id="tab-cube" class="app-tab" type="button" aria-selected="true">Cubo</button>
-      <button id="tab-timer" class="app-tab" type="button" aria-selected="false">Timer WCA 3×3</button>
+    <nav class="app-tabs mb-5" aria-label="Seção da aplicação">
+      <button id="tab-timer" class="app-tab" type="button" aria-selected="true">Timer WCA 3×3</button>
+      <button id="tab-cube" class="app-tab" type="button" aria-selected="false">Cubo</button>
     </nav>
 
     <section id="timer-panel" aria-label="Cronômetro de cubo mágico">
@@ -626,12 +670,13 @@
           <span id="timer-state" class="timer-state">Pronto</span>
         </div>
         <div class="scramble-box">
-          <div class="flex items-center justify-between gap-3">
-            <span class="timer-scramble-label">Scramble atual</span>
+          <div class="scramble-heading">
+            <span class="timer-scramble-label">Scramble desta solve</span>
+            <span id="scramble-sync-state" class="scramble-sync-state">Pronto para aplicar</span>
           </div>
           <p id="timer-scramble" class="timer-scramble mt-1">Carregando scramble…</p>
           <div class="scramble-card-actions">
-            <button id="apply-scramble" type="button" class="ctl-btn rounded-lg border border-line bg-white px-3 py-2 text-[12px] font-medium">Aplicar no cubo</button>
+            <button id="apply-scramble" type="button" class="ctl-btn rounded-lg border border-line bg-white px-3 py-2 text-[12px] font-medium">Usar no cubo</button>
             <button id="new-scramble" type="button" class="ctl-btn rounded-lg border border-line bg-white px-3 py-2 text-[12px] font-medium" title="Gerar outro scramble">Novo scramble</button>
           </div>
         </div>
@@ -1145,6 +1190,35 @@
     render();
   });
 
+  window.addEventListener('scramble:apply', event=>{
+    const value = event.detail && event.detail.value;
+    if (!value) return;
+    playToken++;
+    clearCompletion();
+    pausedFreeLook = false;
+    rebuildSolvedCube();
+    orientationGroup.quaternion.identity();
+    moves = [];
+    idx = 0;
+    els.input.value = value;
+    const result = parseSequence(value);
+    inputValid = result.ok;
+    if (result.ok){
+      moves = result.moves;
+      buildStrip();
+      els.stripPanel.classList.remove('hidden');
+      els.statusPanel.classList.remove('hidden');
+      els.error.classList.add('hidden');
+    } else {
+      els.error.textContent = result.error;
+      els.error.classList.remove('hidden');
+      els.stripPanel.classList.add('hidden');
+      els.statusPanel.classList.add('hidden');
+    }
+    setDragEnabled(true);
+    setAppState('input');
+  });
+
   els.input.addEventListener('keydown', e=>{
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && inputValid){
       e.preventDefault();
@@ -1562,7 +1636,12 @@
   'use strict';
   const tabCube = document.getElementById('tab-cube');
   const tabTimer = document.getElementById('tab-timer');
+  const appTitle = document.getElementById('app-title');
+  const appSubtitle = document.getElementById('app-subtitle');
+  const sectionKicker = document.getElementById('section-kicker');
+  const sectionBadge = document.getElementById('section-badge');
   const scrambleEl = document.getElementById('timer-scramble');
+  const scrambleSyncState = document.getElementById('scramble-sync-state');
   const pad = document.getElementById('timer-pad');
   const display = document.getElementById('timer-display');
   const instruction = document.getElementById('timer-instruction');
@@ -1582,6 +1661,7 @@
   const storeKey = 'cubo-embaralhado-times-v1';
   let times = JSON.parse(localStorage.getItem(storeKey) || '[]');
   let scramble = '';
+  let scrambleApplied = false;
   let phase = 'idle';
   let holdTimer = null;
   let activePress = false;
@@ -1606,7 +1686,11 @@
   }
   function setScramble(value){
     scramble = value || makeFallback();
+    scrambleApplied = false;
     scrambleEl.textContent = scramble;
+    scrambleSyncState.textContent = 'Pronto para aplicar';
+    scrambleSyncState.className = 'scramble-sync-state';
+    apply.disabled = false;
   }
   function makeWorker(){
     if(worker) return worker;
@@ -1651,7 +1735,7 @@
       setScramble(value);
       newScrambleButton.disabled=false;
       newScrambleButton.textContent='Novo scramble';
-      status.textContent='Novo scramble pronto';
+      status.textContent='Novo scramble pronto — aplique-o no cubo antes de resolver';
     });
   }
   function stats(){
@@ -1773,8 +1857,10 @@
     apply.classList.add('applied');
     const originalLabel=apply.textContent;
     apply.textContent='Aplicado';
-    input.value=scramble;
-    input.dispatchEvent(new Event('input',{bubbles:true}));
+    scrambleApplied = true;
+    scrambleSyncState.textContent = 'Aplicado no cubo';
+    scrambleSyncState.className = 'scramble-sync-state is-applied';
+    window.dispatchEvent(new CustomEvent('scramble:apply',{ detail:{ value:scramble } }));
     setTimeout(()=>{
       apply.disabled=false;
       apply.classList.remove('applied');
@@ -1792,11 +1878,32 @@
     document.body.classList.toggle('timer-mode',timer);
     tabCube.setAttribute('aria-selected',String(!timer));
     tabTimer.setAttribute('aria-selected',String(timer));
+
+    const context = timer ? {
+      title:'Curvo Timer',
+      subtitle:'Cronometre suas solves com foco, clareza e ritmo.',
+      kicker:'Treino de cubo mágico',
+      badge:'WCA 3×3',
+      documentTitle:'Curvo Timer · WCA 3×3'
+    } : {
+      title:'Curvo Embaralhado',
+      subtitle:'Visualize e acompanhe cada movimento no seu cubo físico.',
+      kicker:'Visualizador de scramble',
+      badge:'CUBO 3×3',
+      documentTitle:'Curvo Embaralhado'
+    };
+    appTitle.textContent=context.title;
+    appSubtitle.textContent=context.subtitle;
+    sectionKicker.textContent=context.kicker;
+    sectionBadge.textContent=context.badge;
+    document.title=context.documentTitle;
+
     if(timer){stats();if(!scramble)newScramble();}
   }
   tabCube.addEventListener('click',()=>select('cube')); tabTimer.addEventListener('click',()=>select('timer'));
   stats();
   setState('idle');
+  select('timer');
 })();
 </script>
 
