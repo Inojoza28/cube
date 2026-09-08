@@ -640,10 +640,187 @@
     .scramble-sync-state { font-size:10px; }
   }
 
+
+  .scramble-label-group { display:inline-flex; align-items:center; gap:.45rem; }
+  .scramble-attempt { color:#315C4E; font-size:9px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+  .scramble-box.is-used .scramble-attempt { color:#A6A29A; }
+  .scramble-box.is-retry .scramble-attempt { color:#B58252; }
+  .scramble-box.is-retry .scramble-sync-state { color:#B58252; }
+
+  /* Cópia inline: ação discreta, visível e imediatamente associada ao scramble */
+  .scramble-inline { display:flex; align-items:flex-start; gap:.5rem; }
+  .scramble-inline .timer-scramble { flex:1; }
+  .copy-icon { flex:none; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; margin-top:.05rem; padding:0; border:1px solid transparent; border-radius:.55rem; color:#8A8579; background:transparent; cursor:pointer; transition:color .18s ease,background .18s ease,border-color .18s ease,transform .14s ease; }
+  .copy-icon svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .copy-icon:hover { color:#315C4E; background:#F1F6F2; border-color:#D8E4DA; }
+  .copy-icon:active { transform:scale(.92); }
+  .copy-icon:focus-visible { outline:2px solid #315C4E; outline-offset:2px; }
+  .copy-icon.is-copied { color:#2F8A5A; background:#EAF7EE; border-color:#B9DDBF; }
+  .scramble-box.is-used .copy-icon { color:#AAA69E; }
+  .scramble-box.is-used .copy-icon:hover { color:#68716B; background:#ECEBE6; border-color:#D8D5CC; }
+  .finished-scramble-line { display:flex; align-items:flex-start; justify-content:center; gap:.35rem; max-width:100%; }
+  .finished-scramble-line .finished-scramble-text { max-width:calc(100% - 2rem); }
+  .copy-icon-finished { width:26px; height:26px; margin-top:-.15rem; }
+
+  /* Resultado da solve: contexto suficiente para salvar tempo e scramble */
+  .finished-scramble { display:none; width:min(100%,42rem); margin:.85rem auto 0; text-align:center; }
+  body.timer-finished .finished-scramble { display:block; }
+  .finished-scramble-label { display:block; margin-bottom:.28rem; color:#8A8579; font-size:9px; letter-spacing:.1em; text-transform:uppercase; }
+  .finished-scramble-text { display:block; color:#5E5A53; font:500 12px/1.55 'Space Grotesk',sans-serif; letter-spacing:.025em; }
+  .timer-result-actions button { min-width:0; min-height:42px; padding:.55rem .8rem; font-size:12px; }
+  .history-title { padding-left:.38rem; font-size:9px; }
+  .history-row { padding:.48rem .38rem; font-size:11px; }
+  .history-row strong { font-size:14px; }
+  .timer-history-card { padding:.92rem; }
+  .timer-history-card .timer-history-actions { padding-top:.48rem; }
+  .timer-history-actions button { min-height:32px; font-size:10px; }
+  @media (max-width:800px) {
+    .finished-scramble-text { font-size:11px; }
+    .timer-result-actions { flex-wrap:wrap; }
+    .timer-result-actions button { flex:1 1 auto; }
+  }
+
+
+  /* Scramble concluído: deixa explícito que é preciso gerar um novo */
+  .scramble-box.is-used { background:rgba(245,245,241,.72); border-color:#E3E1D9; }
+  .scramble-box.is-used .timer-scramble { color:#9A978F; }
+  .scramble-box.is-used .timer-scramble-label { color:#A6A29A; }
+  .scramble-box.is-used .scramble-sync-state { color:#9A978F; }
+  .scramble-box.is-used #apply-scramble { color:#AAA69E; border-color:#E5E2DB; background:#F3F2EE; box-shadow:none; cursor:not-allowed; }
+  .scramble-box.is-used #new-scramble { color:#315C4E; }
+  .scramble-box.is-used #new-scramble::before { opacity:1; }
+  .scramble-box.is-used .timer-scramble { text-decoration:line-through; text-decoration-color:rgba(138,133,121,.35); text-decoration-thickness:1px; }
+
+
+  /* Card do scramble: tentativa e estado com hierarquia mais clara */
+  .scramble-box .scramble-heading {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,13rem);
+    align-items:center;
+    gap:.7rem;
+    padding-bottom:.65rem;
+    border-bottom:1px solid rgba(49,92,78,.1);
+  }
+  .scramble-label-group { display:flex; align-items:center; gap:.55rem; min-width:0; }
+  .scramble-label-group .timer-scramble-label { line-height:1.25; }
+  .scramble-attempt {
+    flex:none;
+    padding:.24rem .45rem;
+    border:1px solid rgba(181,130,82,.2);
+    border-radius:.45rem;
+    color:#A46F3D;
+    background:#FBF5ED;
+    font-size:9px;
+    font-weight:600;
+    letter-spacing:.05em;
+    line-height:1;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .scramble-sync-state {
+    justify-self:end;
+    max-width:13rem;
+    padding:.25rem .45rem;
+    border-radius:.4rem;
+    color:#8A8579;
+    background:rgba(242,241,236,.65);
+    font-size:10px;
+    line-height:1.25;
+    text-align:right;
+    white-space:normal;
+  }
+  .scramble-sync-state.is-applied { color:#2F8A5A; background:#EEF7F0; }
+  .scramble-sync-state.is-stale { color:#A46F3D; background:#FBF5ED; }
+  .scramble-box.is-used .scramble-heading { border-bottom-color:rgba(138,133,121,.15); }
+  .scramble-box.is-used .scramble-attempt { color:#9A978F; border-color:#E1DED6; background:#F3F2EE; }
+  .scramble-box.is-used .scramble-sync-state { color:#9A978F; background:#F1F0EC; }
+  .scramble-box.is-retry .scramble-attempt { color:#A46F3D; border-color:rgba(181,130,82,.25); background:#FBF5ED; }
+  .scramble-box .scramble-inline { margin-top:.75rem; }
+  .scramble-card-actions { margin-top:1rem; gap:.55rem; }
+  .scramble-card-actions #apply-scramble { min-height:42px; }
+  .scramble-card-actions #new-scramble { min-height:38px; }
+  @media (max-width:800px) {
+    .scramble-box .scramble-heading { grid-template-columns:minmax(0,1fr) auto; gap:.5rem; }
+    .scramble-label-group { align-items:flex-start; flex-direction:column; gap:.35rem; }
+    .scramble-sync-state { max-width:9.5rem; }
+  }
+  @media (max-width:420px) {
+    .scramble-box .scramble-heading { grid-template-columns:1fr; align-items:start; }
+    .scramble-sync-state { justify-self:start; max-width:none; text-align:left; }
+  }
+
+
+  /* Composição final do card: título limpo e metadados em uma segunda linha */
+  .scramble-box .scramble-heading {
+    display:block;
+    padding:0;
+    border:0;
+  }
+  .scramble-box .timer-scramble-label {
+    display:block;
+    color:#8A8579;
+    font-size:10px;
+    line-height:1.25;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+  }
+  .scramble-meta-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:.65rem;
+    min-height:25px;
+    margin-top:.55rem;
+    padding-bottom:.65rem;
+    border-bottom:1px solid rgba(49,92,78,.1);
+  }
+  .scramble-meta-row .scramble-attempt { flex:none; }
+  .scramble-meta-row .scramble-sync-state { margin-left:auto; max-width:15rem; }
+  .scramble-box .scramble-inline { margin-top:.8rem; }
+  .copy-toast {
+    position:fixed;
+    top:1rem;
+    right:1rem;
+    z-index:100;
+    max-width:calc(100vw - 2rem);
+    padding:.62rem .82rem;
+    border:1px solid #C9DCCF;
+    border-radius:.7rem;
+    color:#285D45;
+    background:rgba(244,251,246,.96);
+    box-shadow:0 10px 28px rgba(23,23,26,.12);
+    font:600 12px 'Inter',sans-serif;
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(-8px);
+    transition:opacity .22s ease, transform .22s ease;
+  }
+  .copy-toast.is-visible { opacity:1; transform:translateY(0); }
+  .copy-icon.is-copied {
+    width:auto;
+    min-width:76px;
+    gap:.28rem;
+    padding:0 .55rem;
+    color:#2F8A5A;
+    background:#EAF7EE;
+    border-color:#B9DDBF;
+  }
+  .copy-icon.is-copied::after {
+    content:'Copiado';
+    font:600 10px 'Inter',sans-serif;
+  }
+  @media (max-width:420px) {
+    .scramble-meta-row { align-items:flex-start; flex-direction:column; gap:.45rem; }
+    .scramble-meta-row .scramble-sync-state { margin-left:0; max-width:none; text-align:left; }
+    .copy-toast { top:.75rem; right:.75rem; }
+  }
+
 </style>
 </head>
 
 <body class="timer-mode bg-[#F2F4F3] text-ink font-sans min-h-screen">
+
+  <div id="copy-toast" class="copy-toast" role="status" aria-live="polite" aria-atomic="true">Copiado com sucesso!</div>
 
   <div class="app-shell mx-auto w-full max-w-[560px] px-5 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-10 min-h-screen flex flex-col">
 
@@ -672,9 +849,17 @@
         <div class="scramble-box">
           <div class="scramble-heading">
             <span class="timer-scramble-label">Scramble desta solve</span>
+          </div>
+          <div class="scramble-meta-row">
+            <span id="scramble-attempt" class="scramble-attempt">1ª tentativa</span>
             <span id="scramble-sync-state" class="scramble-sync-state">Pronto para aplicar</span>
           </div>
-          <p id="timer-scramble" class="timer-scramble mt-1">Carregando scramble…</p>
+          <div class="scramble-inline mt-1">
+            <p id="timer-scramble" class="timer-scramble">Carregando scramble…</p>
+            <button id="copy-current-scramble" class="copy-icon" type="button" aria-label="Copiar scramble atual" title="Copiar scramble atual">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>
+            </button>
+          </div>
           <div class="scramble-card-actions">
             <button id="apply-scramble" type="button" class="ctl-btn rounded-lg border border-line bg-white px-3 py-2 text-[12px] font-medium">Usar no cubo</button>
             <button id="new-scramble" type="button" class="ctl-btn rounded-lg border border-line bg-white px-3 py-2 text-[12px] font-medium" title="Gerar outro scramble">Novo scramble</button>
@@ -682,6 +867,15 @@
         </div>
         <div id="timer-pad" class="timer-pad" role="button" tabindex="0" aria-label="Segure Espaço para preparar o cronômetro" aria-live="off">
           <div id="timer-display" class="timer-display">0.00</div>
+          <div id="finished-scramble" class="finished-scramble" hidden>
+            <span class="finished-scramble-label">Scramble desta solve</span>
+            <span class="finished-scramble-line">
+              <span id="finished-scramble-text" class="finished-scramble-text"></span>
+              <button id="copy-finished-scramble" class="copy-icon copy-icon-finished" type="button" aria-label="Copiar scramble da solve" title="Copiar scramble da solve">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>
+              </button>
+            </span>
+          </div>
           <p id="timer-instruction" class="timer-instruction">Segure Espaço para preparar</p>
         </div>
         <div class="timer-controls" aria-label="Controles do cronômetro">
@@ -1641,10 +1835,20 @@
   const sectionKicker = document.getElementById('section-kicker');
   const sectionBadge = document.getElementById('section-badge');
   const scrambleEl = document.getElementById('timer-scramble');
+  const scrambleBox = document.querySelector('.scramble-box');
   const scrambleSyncState = document.getElementById('scramble-sync-state');
+  const scrambleAttempt = document.getElementById('scramble-attempt');
+  const copyCurrentScramble = document.getElementById('copy-current-scramble');
+  const copyToast = document.getElementById('copy-toast');
+  let copyToastTimer = null;
+  const copyIconMarkup = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>';
+  const copiedIconMarkup = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>';
   const pad = document.getElementById('timer-pad');
   const display = document.getElementById('timer-display');
   const instruction = document.getElementById('timer-instruction');
+  const finishedScramble = document.getElementById('finished-scramble');
+  const finishedScrambleText = document.getElementById('finished-scramble-text');
+  const copyFinishedScramble = document.getElementById('copy-finished-scramble');
   const stateBadge = document.getElementById('timer-state');
   const status = document.getElementById('timer-status');
   const startButton = document.getElementById('timer-start');
@@ -1662,6 +1866,8 @@
   let times = JSON.parse(localStorage.getItem(storeKey) || '[]');
   let scramble = '';
   let scrambleApplied = false;
+  let scrambleUsed = false;
+  let scrambleAttemptNumber = 1;
   let phase = 'idle';
   let holdTimer = null;
   let activePress = false;
@@ -1687,9 +1893,32 @@
   function setScramble(value){
     scramble = value || makeFallback();
     scrambleApplied = false;
+    scrambleUsed = false;
+    scrambleAttemptNumber = 1;
+    scrambleAttempt.textContent = '1ª tentativa';
     scrambleEl.textContent = scramble;
+    scrambleBox.classList.remove('is-used','is-retry');
     scrambleSyncState.textContent = 'Pronto para aplicar';
     scrambleSyncState.className = 'scramble-sync-state';
+    apply.disabled = false;
+  }
+
+  function markScrambleUsed(){
+    scrambleUsed = true;
+    scrambleBox.classList.add('is-used');
+    scrambleSyncState.textContent = 'Usado nesta solve — gere um novo';
+    scrambleSyncState.className = 'scramble-sync-state is-stale';
+    apply.disabled = true;
+  }
+
+  function prepareRetry(){
+    scrambleAttemptNumber += 1;
+    scrambleAttempt.textContent = `${scrambleAttemptNumber}ª tentativa`;
+    scrambleUsed = false;
+    scrambleBox.classList.remove('is-used');
+    scrambleBox.classList.add('is-retry');
+    scrambleSyncState.textContent = 'Nova tentativa com este scramble';
+    scrambleSyncState.className = 'scramble-sync-state is-stale';
     apply.disabled = false;
   }
   function makeWorker(){
@@ -1745,7 +1974,7 @@
     document.getElementById('stat-best').textContent=best===null?'—':format(best);
     document.getElementById('stat-ao5').textContent=ao5===null?'—':format(ao5);
     document.getElementById('stat-count').textContent=String(times.length);
-    historyEl.innerHTML='<div class="history-title"><span>Histórico</span></div>' + (times.slice().reverse().map((t,i)=>`<div class="history-row"><span>#${times.length-i}</span><strong>${format(t)} s</strong></div>`).join('') || '<p class="text-[12px] text-muted py-3 text-center">Seus tempos aparecerão aqui.</p>');
+    historyEl.innerHTML='<div class="history-title"><span>Histórico</span><span>Mais recente primeiro</span></div>' + (times.slice().reverse().map((t,i)=>`<div class="history-row"><span>#${times.length-i}</span><strong>${format(t)} s</strong></div>`).join('') || '<p class="text-[12px] text-muted py-3 text-center">Seus tempos aparecerão aqui.</p>');
   }
   function save(){ localStorage.setItem(storeKey, JSON.stringify(times)); stats(); }
   function currentElapsed(){ return phase === 'running' ? performance.now() - runStart : 0; }
@@ -1768,8 +1997,19 @@
     resetButton.classList.toggle('result-action',kind==='finished');
     resetButton.textContent = kind==='finished' ? 'Preparar próximo' : '↻';
     resetButton.setAttribute('aria-label',kind==='finished'?'Preparar próximo tempo':'Reiniciar cronômetro');
-    instruction.textContent = kind==='running'?'Pressione Espaço para finalizar':kind==='holding'?'Continue segurando':kind==='ready'?'Solte para iniciar':kind==='finished'?'Escolha o próximo passo':'Segure Espaço para preparar';
+    instruction.textContent = kind==='running'?'Pressione Espaço para finalizar':kind==='holding'?'Continue segurando':kind==='ready'?'Solte para iniciar':kind==='finished'?'Solve finalizada · Enter salva':'Segure Espaço para preparar';
     pad.setAttribute('aria-label',instruction.textContent);
+  }
+
+  function resetCopyButtons(){
+    copyFinishedScramble.classList.remove('is-copied');
+    copyFinishedScramble.innerHTML=copiedIconMarkup;
+    copyFinishedScramble.setAttribute('aria-label','Copiar scramble da solve');
+    copyFinishedScramble.title='Copiar scramble da solve';
+    copyCurrentScramble.classList.remove('is-copied');
+    copyCurrentScramble.innerHTML=copyIconMarkup;
+    copyCurrentScramble.setAttribute('aria-label','Copiar scramble atual');
+    copyCurrentScramble.title='Copiar scramble atual';
   }
 
   function resetTimer(){
@@ -1777,6 +2017,8 @@
     if(holdTimer) clearTimeout(holdTimer);
     raf = null;
     holdTimer=null; activePress=false; spacePressed=false; finishedElapsed=0; phase='idle'; display.textContent='0.00'; status.textContent='';
+    finishedScramble.hidden=true; finishedScrambleText.textContent='';
+    resetCopyButtons();
     display.classList.remove('running','error'); setState('idle');
   }
   function beginHold(){
@@ -1797,17 +2039,57 @@
     if(phase==='ready') startTimer();
   }
   function startTimer(){
+    resetCopyButtons();
     phase='running'; runStart=performance.now(); display.textContent='0.00'; status.textContent='';
     display.classList.add('running'); setState('running'); tick();
   }
   function finishTimer(){
     if(phase!=='running') return;
+    resetCopyButtons();
     const elapsed=Math.round(currentElapsed()); if(raf)cancelAnimationFrame(raf); raf=null;
     phase='finished'; finishedElapsed=elapsed;
+    finishedScrambleText.textContent=scramble || 'Scramble indisponível';
+    finishedScramble.hidden=false;
+    markScrambleUsed();
     display.textContent=format(elapsed); display.classList.remove('running'); status.textContent=''; setState('finished');
   }
   resetButton.addEventListener('click',resetTimer);
-  restartResultButton.addEventListener('click',resetTimer);
+  restartResultButton.addEventListener('click',()=>{ resetTimer(); prepareRetry(); });
+  function showCopyToast(){
+    clearTimeout(copyToastTimer);
+    copyToast.classList.add('is-visible');
+    copyToastTimer=setTimeout(()=>copyToast.classList.remove('is-visible'), 1800);
+  }
+
+  async function copyScramble(button, label){
+    if(!scramble) return;
+    try {
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(scramble);
+      } else {
+        const helper=document.createElement('textarea');
+        helper.value=scramble; helper.setAttribute('readonly','');
+        helper.style.position='fixed'; helper.style.opacity='0';
+        document.body.appendChild(helper); helper.select();
+        document.execCommand('copy'); helper.remove();
+      }
+      button.classList.add('is-copied');
+      button.innerHTML=copiedIconMarkup;
+      button.setAttribute('aria-label',`Scramble ${label} copiado`);
+      button.title='Copiado';
+      showCopyToast();
+      setTimeout(()=>{
+        button.classList.remove('is-copied');
+        button.innerHTML=copyIconMarkup;
+        button.setAttribute('aria-label',label);
+        button.title=label;
+      }, 1400);
+    } catch {
+      status.textContent='Não foi possível copiar automaticamente';
+    }
+  }
+  copyCurrentScramble.addEventListener('click',()=>copyScramble(copyCurrentScramble,'Copiar scramble atual'));
+  copyFinishedScramble.addEventListener('click',()=>copyScramble(copyFinishedScramble,'Copiar scramble da solve'));
   saveResultButton.addEventListener('click',()=>{
     if(phase!=='finished' || !finishedElapsed) return;
     times.push(finishedElapsed); save();
@@ -1836,6 +2118,11 @@
     if(phase==='running') finishTimer();
     else beginHold();
   });
+  window.addEventListener('keydown',e=>{
+    if(e.code !== 'Enter' || phase !== 'finished' || e.repeat) return;
+    e.preventDefault();
+    saveResultButton.click();
+  });
   window.addEventListener('keyup',e=>{
     if(document.body.classList.contains('timer-mode') && e.code==='Space'){
       e.preventDefault();
@@ -1852,7 +2139,7 @@
   document.addEventListener('visibilitychange',()=>{ if(document.hidden) cancelPreparation(); });
   newScrambleButton.addEventListener('click',newScramble);
   apply.addEventListener('click',()=>{
-    if(!scramble || apply.disabled) return;
+    if(!scramble || scrambleUsed || apply.disabled) return;
     apply.disabled=true;
     apply.classList.add('applied');
     const originalLabel=apply.textContent;
