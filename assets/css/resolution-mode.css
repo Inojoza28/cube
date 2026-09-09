@@ -1,0 +1,46 @@
+/* A display preference only: the timer state machine and Cube tab stay intact. */
+.resolution-toggle { position:relative; display:flex; align-items:center; justify-content:space-between; gap:20px; min-height:48px; cursor:pointer; }
+.resolution-toggle-title { display:block; color:var(--text); font-size:13px; font-weight:500; }
+.resolution-toggle-description { display:block; margin-top:4px; color:var(--secondary); font-size:11px; line-height:1.5; }
+.resolution-toggle input { position:absolute; right:0; width:44px; height:44px; opacity:0; cursor:pointer; }
+.resolution-switch { display:block; flex:none; width:38px; height:22px; padding:3px; border-radius:999px; background:var(--border); transition:background .18s ease; pointer-events:none; }
+.resolution-switch::before { content:''; display:block; width:16px; height:16px; border-radius:50%; background:var(--surface); box-shadow:0 1px 3px #0002; transition:transform .18s ease; }
+.resolution-toggle input:checked + .resolution-switch { background:var(--action); }
+.resolution-toggle input:checked + .resolution-switch::before { transform:translateX(16px); background:var(--on-action); }
+.resolution-toggle input:focus-visible + .resolution-switch { outline:2px solid var(--accent); outline-offset:4px; }
+@media(prefers-reduced-motion:reduce) { .resolution-switch, .resolution-switch::before { transition:none; } }
+
+:root.resolution-mode:has(body.timer-mode), :root.resolution-mode body.timer-mode { height:100dvh; overflow:hidden; }
+:root.resolution-mode body.timer-mode .app-header,
+:root.resolution-mode body.timer-mode .header-preferences { display:contents; }
+:root.resolution-mode body.timer-mode .app-header-copy,
+:root.resolution-mode body.timer-mode #section-badge { display:none; }
+:root.resolution-mode body.timer-mode #open-settings { position:fixed; top:max(16px,env(safe-area-inset-top)); right:max(16px,env(safe-area-inset-right)); z-index:55; width:44px; height:44px; padding:0; border-radius:50%; background:var(--surface); color:var(--secondary); box-shadow:0 2px 12px #0000000a; }
+:root.resolution-mode body.timer-mode #open-settings:hover { background:var(--soft); color:var(--accent); }
+:root.resolution-mode body.timer-mode #open-settings .settings-button-label { display:none; }
+/* Preserve the existing preparation, running and result screens. */
+:root.resolution-mode body.timer-mode:is(.timer-holding,.timer-running,.timer-finished) #open-settings { display:none; }
+
+/* Fit only the idle composition; fullscreen timer states retain their original sizing. */
+:root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .app-shell { height:100dvh; min-height:0; padding-top:max(20px,env(safe-area-inset-top)); padding-bottom:max(20px,env(safe-area-inset-bottom)); }
+:root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .app-tabs { flex:none; margin-bottom:clamp(16px,4vh,40px); }
+:root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) #timer-panel { flex:1; min-height:0; }
+:root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-layout { height:100%; min-height:0; grid-template-rows:auto minmax(0,1fr) auto auto auto; }
+:root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-pad { min-height:0; height:100%; }
+:root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-history-card { grid-row:1 / -1; overflow:hidden; }
+:root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-history { min-height:0; max-height:none; overflow:auto; }
+:root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-history-actions { flex:none; }
+:root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .scramble-reference { min-height:0; max-height:100%; overflow:auto; }
+@media(min-width:801px) {
+  :root.resolution-mode body.timer-mode .app-shell { max-width:min(1180px,calc(100% - 112px)); }
+}
+@media(max-width:800px) {
+  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .app-tabs { margin-right:52px; margin-bottom:16px; }
+  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-layout { gap:8px; }
+  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-head { flex:none; }
+  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .scramble-reference { flex:0 1 auto; min-height:100px; }
+  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-pad { flex:1 0 120px; height:auto; }
+  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-status { flex:none; margin:0; }
+  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .stat-grid { flex:none; margin:0; padding:.6rem 0; }
+  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-history-card { flex:0 1 100px; min-height:72px; }
+}

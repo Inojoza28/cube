@@ -10,6 +10,7 @@ assets/
   css/
     app.css                      Layout, componentes e estados existentes
     settings.css                 Temas, configurações e card de PR
+    resolution-mode.css          Modo resolução e ajuste à altura da tela
   js/
     app.js                       Inicialização dos controllers
     core/namespace.js            Namespace Cubo, sem dependências
@@ -28,9 +29,11 @@ Scripts clássicos são carregados em ordem explícita no HTML, usando somente o
 ## Dados locais
 
 - `cubo-embaralhado-times-v1`: histórico de tempos em milissegundos.
-- `cubo-embaralhado-settings-v1`: tema, PR atual e objetivo em milissegundos.
+- `cubo-embaralhado-settings-v1`: tema, modo resolução (`resolutionMode`), PR atual e objetivo em milissegundos.
 
 As chaves e os formatos existentes foram preservados. O PR é definido pelo usuário e não é substituído automaticamente após uma solve. O aviso de novo PR compara os tempos na precisão exibida pelo timer.
+
+O modo resolução vem desativado e afeta apenas a aba Timer. Oculta o cabeçalho, mantém as abas e posiciona a mesma ação de Configurações no canto da janela. A composição ocupa a altura disponível, com rolagem interna de conteúdo quando necessária em telas pequenas. Os estados de preparação, contagem e resultado mantêm sua apresentação original. A aba Cubo usa o layout normal mesmo com a preferência ativada.
 
 ## Verificação manual
 

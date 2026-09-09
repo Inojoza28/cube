@@ -7,6 +7,7 @@ Cubo.models.settings = (() => {
   try { stored = JSON.parse(localStorage.getItem(key)) || {}; } catch {}
   const state = {
     theme: themes.includes(stored.theme) ? stored.theme : 'light',
+    resolutionMode: stored.resolutionMode === true,
     current: validTime(stored.current) ? stored.current : null,
     target: validTime(stored.target) ? stored.target : null
   };
@@ -25,6 +26,9 @@ Cubo.models.settings = (() => {
     parseTime,
     setTheme(theme) {
       if (themes.includes(theme)) state.theme = theme;
+    },
+    setResolutionMode(enabled) {
+      state.resolutionMode = enabled === true;
     },
     setTime(name, raw) {
       if (!['current', 'target'].includes(name)) return false;

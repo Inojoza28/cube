@@ -12,6 +12,8 @@ Cubo.views.createSettings = function() {
 
   function render(settings) {
     document.documentElement.dataset.theme = settings.theme;
+    document.documentElement.classList.toggle('resolution-mode', settings.resolutionMode);
+    byId('resolution-mode').checked = settings.resolutionMode;
     document.querySelector('meta[name="theme-color"]').content = { light: '#F2F4F3', black: '#111315', blue: '#101e32' }[settings.theme];
     themeButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === settings.theme)));
     byId('pr-card').hidden = settings.current === null && settings.target === null;
@@ -60,7 +62,11 @@ Cubo.views.createSettings = function() {
         : 'Preferências aplicadas. O navegador não permitiu salvá-las para a próxima visita.';
     },
     bind(actions) {
+      byId('resolution-mode').addEventListener('change', event => actions.resolutionMode(event.target.checked));
       openButton.addEventListener('click', () => open(openButton));
+      for (const type of ['keydown', 'keyup']) openButton.addEventListener(type, event => {
+        if (event.code === 'Space' || event.code === 'Enter') event.stopPropagation();
+      });
       editButton.addEventListener('click', () => open(editButton, 'target'));
       byId('close-settings').addEventListener('click', () => dialog.close());
       dialog.addEventListener('close', () => (returnFocus.closest('[hidden]') ? openButton : returnFocus).focus());

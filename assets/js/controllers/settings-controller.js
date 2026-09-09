@@ -9,6 +9,7 @@ Cubo.controllers.initSettings = function() {
 
   view.bind({
     theme(value) { model.setTheme(value); update(); },
+    resolutionMode(enabled) { model.setResolutionMode(enabled); update(); },
     time(name, value) {
       const valid = model.setTime(name, value);
       view.validation(name, valid);

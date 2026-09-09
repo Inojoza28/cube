@@ -6,6 +6,7 @@
 <script src="assets/js/models/settings-model.js"></script>
 <script src="assets/js/config/theme.js"></script>
 <link rel="stylesheet" href="assets/css/settings.css">
+<link rel="stylesheet" href="assets/css/resolution-mode.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cubo Timer</title>
 <meta name="description" content="Cubo Timer: cronometre suas solves de cubo mágico 3×3, acompanhe scrambles WCA e organize seus tempos de forma simples e profissional.">
@@ -243,6 +244,13 @@
       <span class="theme-option-label">Blue<svg class="theme-option-check" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8 3 3 7-7"/></svg></span>
     </button>
   </div></fieldset>
+  <fieldset class="resolution-setting"><legend>Foco</legend>
+    <label class="resolution-toggle" for="resolution-mode">
+      <span><span class="resolution-toggle-title">Modo resolução</span><span id="resolution-mode-description" class="resolution-toggle-description">Minimiza o cabeçalho e foca totalmente no timer.</span></span>
+      <input id="resolution-mode" type="checkbox" role="switch" aria-describedby="resolution-mode-description">
+      <span class="resolution-switch" aria-hidden="true"></span>
+    </label>
+  </fieldset>
   <fieldset><legend>Desempenho</legend><p id="pr-help">Use segundos (12,48) ou minutos (1:02,48). Deixe vazio para remover.</p>
     <div class="pr-fields"><div><label for="pr-current">PR atual</label><input id="pr-current" type="text" inputmode="decimal" autocomplete="off" placeholder="12,48" aria-describedby="pr-help pr-current-error"><p id="pr-current-error" class="field-error" aria-live="polite"></p></div>
     <div><label for="pr-target">PR desejado</label><input id="pr-target" type="text" inputmode="decimal" autocomplete="off" placeholder="9,99" aria-describedby="pr-help pr-target-error"><p id="pr-target-error" class="field-error" aria-live="polite"></p></div></div>
