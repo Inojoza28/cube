@@ -10,6 +10,12 @@
 .resolution-toggle input:focus-visible + .resolution-switch { outline:2px solid var(--accent); outline-offset:4px; }
 @media(prefers-reduced-motion:reduce) { .resolution-switch, .resolution-switch::before { transition:none; } }
 
+@media(max-width:1023.98px) {
+  #settings-dialog .resolution-setting { display:none; }
+}
+
+/* Keep the saved preference dormant outside desktop layouts. */
+@media(min-width:1024px) {
 :root.resolution-mode:has(body.timer-mode), :root.resolution-mode body.timer-mode { height:100dvh; overflow:hidden; }
 :root.resolution-mode body.timer-mode .app-header,
 :root.resolution-mode body.timer-mode .header-preferences { display:contents; }
@@ -31,16 +37,5 @@
 :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-history { min-height:0; max-height:none; overflow:auto; }
 :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-history-actions { flex:none; }
 :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .scramble-reference { min-height:0; max-height:100%; overflow:auto; }
-@media(min-width:801px) {
   :root.resolution-mode body.timer-mode .app-shell { max-width:min(1180px,calc(100% - 112px)); }
-}
-@media(max-width:800px) {
-  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .app-tabs { margin-right:52px; margin-bottom:16px; }
-  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-layout { gap:8px; }
-  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-head { flex:none; }
-  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .scramble-reference { flex:0 1 auto; min-height:100px; }
-  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-pad { flex:1 0 120px; height:auto; }
-  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-status { flex:none; margin:0; }
-  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .stat-grid { flex:none; margin:0; padding:.6rem 0; }
-  :root.resolution-mode body.timer-mode:not(:is(.timer-holding,.timer-running,.timer-finished)) .timer-history-card { flex:0 1 100px; min-height:72px; }
 }

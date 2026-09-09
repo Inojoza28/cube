@@ -33,7 +33,7 @@ Scripts clássicos são carregados em ordem explícita no HTML, usando somente o
 
 As chaves e os formatos existentes foram preservados. O PR é definido pelo usuário e não é substituído automaticamente após uma solve. O aviso de novo PR compara os tempos na precisão exibida pelo timer.
 
-O modo resolução vem desativado e afeta apenas a aba Timer. Oculta o cabeçalho, mantém as abas e posiciona a mesma ação de Configurações no canto da janela. A composição ocupa a altura disponível, com rolagem interna de conteúdo quando necessária em telas pequenas. Os estados de preparação, contagem e resultado mantêm sua apresentação original. A aba Cubo usa o layout normal mesmo com a preferência ativada.
+O modo resolução vem desativado e fica disponível apenas no desktop (largura a partir de 1024 px), na aba Timer. Oculta o cabeçalho, mantém as abas e posiciona a mesma ação de Configurações no canto da janela. A composição ocupa a altura disponível. Em larguras menores, a opção é ocultada e o layout normal é restaurado, mantendo a preferência salva para quando a janela voltar ao desktop. Os estados de preparação, contagem e resultado mantêm sua apresentação original. A aba Cubo usa o layout normal mesmo com a preferência ativada.
 
 ## Verificação manual
 
