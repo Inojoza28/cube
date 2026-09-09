@@ -24,7 +24,18 @@ body:has(#pr-confirm-dialog[open]) { overflow:hidden; }
 #pr-confirm-add { background:var(--action); border-color:var(--action); color:var(--on-action); }
 #pr-confirm-add:hover { background:var(--action-hover); border-color:var(--action-hover); }
 :root #pr-confirm-dialog button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.pr-confetti { --celebration-0:var(--accent); --celebration-1:#c99429; --celebration-2:#578bca; --celebration-3:#c77591; position:absolute; inset:0; z-index:2; overflow:hidden; border-radius:inherit; pointer-events:none; }
+:root[data-theme="black"] .pr-confetti, :root[data-theme="blue"] .pr-confetti { --celebration-1:#f5cc70; --celebration-2:#93c5fd; --celebration-3:#efa6c2; }
+.pr-confetti-piece { position:absolute; bottom:24px; width:6px; height:10px; border-radius:1px; background:var(--confetti-color); opacity:0; animation:prConfettiBurst 1.4s cubic-bezier(.12,.72,.18,1) both; }
+.pr-confetti-piece:nth-child(3n) { width:5px; height:5px; border-radius:50%; }
+@keyframes prConfettiBurst {
+  0% { opacity:0; transform:translate3d(0,0,0) rotate(0deg) scale(.4); }
+  8% { opacity:1; }
+  65% { opacity:1; }
+  100% { opacity:0; transform:translate3d(var(--confetti-x),var(--confetti-y),0) rotate(var(--confetti-turn)) scale(1.1); }
+}
 @media(prefers-reduced-motion:reduce) {
+  .pr-confetti { display:none; }
   #pr-confirm-dialog[open], #pr-confirm-dialog[open]::backdrop { animation:none; }
   .pr-confirm-actions button { transition:none; }
 }
