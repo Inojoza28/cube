@@ -25,6 +25,7 @@ const {parseSequence,invertMove,STEP_INTERVAL,COMPLETE_VISIBLE_MS,COUNTDOWN_MS} 
   let pausedFreeLook = false;
   let sequenceSpeed = 1;
   const SPEED_OPTIONS = [1, 1.5, 2];
+  const timerReturn = Cubo.controllers.createCubeReturn(() => appState === 'completed');
 
   const scene = Cubo.views.createCubeScene();
   const {rebuildSolvedCube,playMove,setDragEnabled,resetOrientation} = scene;
@@ -35,6 +36,7 @@ const {parseSequence,invertMove,STEP_INTERVAL,COMPLETE_VISIBLE_MS,COUNTDOWN_MS} 
   const {els,paintModeSelect,buildStrip,updateStatus,render} = view;
 
   function clearCompletion(){
+    timerReturn.cancel();
     completionVisible = false;
     if (completionTimer){
       clearTimeout(completionTimer);
@@ -42,7 +44,11 @@ const {parseSequence,invertMove,STEP_INTERVAL,COMPLETE_VISIBLE_MS,COUNTDOWN_MS} 
     }
   }
 
-  function setAppState(s){ appState = s; render(); }
+  function setAppState(s){
+    if (s !== 'completed') timerReturn.cancel();
+    appState = s;
+    render();
+  }
 
   els.modeSequence.addEventListener('click', ()=>{ mode = 'sequence'; paintModeSelect(); render(); });
   els.modeStep.addEventListener('click', ()=>{ mode = 'step'; paintModeSelect(); render(); });
@@ -204,6 +210,7 @@ const {parseSequence,invertMove,STEP_INTERVAL,COMPLETE_VISIBLE_MS,COUNTDOWN_MS} 
     clearCompletion();
     completionVisible = true;
     setAppState('completed');
+    timerReturn.start();
     completionTimer = setTimeout(()=>{
       completionVisible = false;
       completionTimer = null;

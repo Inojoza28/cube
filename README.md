@@ -11,6 +11,7 @@ assets/
     app.css                      Layout, componentes e estados existentes
     settings.css                 Temas, configurações e card de PR
     resolution-mode.css          Modo resolução e ajuste à altura da tela
+    cube-return.css              Convite para voltar ao Timer após embaralhar
   js/
     app.js                       Inicialização dos controllers
     core/namespace.js            Namespace Cubo, sem dependências
@@ -45,3 +46,9 @@ O modo resolução vem desativado e fica disponível apenas no desktop (largura 
 6. Confira o card e as configurações em celular e desktop.
 
 Nenhum arquivo de teste é necessário para executar a aplicação.
+
+## Retorno após embaralhar
+
+Ao terminar uma sequência no Cubo (automática ou passo a passo), o controller aguarda 1,5 segundo e exibe uma contagem de 5 segundos. “Ficar no cubo” cancela a transição; “Ir para o timer” antecipa a navegação. A troca usa a ação existente da aba Timer e não inicia a contagem de uma solve.
+
+Reiniciar, iniciar outra sequência, entrar em rotação livre, abrir Configurações, mudar para o Timer ou ocultar a página cancela o retorno pendente. A apresentação fica em `cube-return-view.js`, e a temporização e o cancelamento em `cube-return-controller.js`.

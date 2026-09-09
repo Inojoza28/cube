@@ -1,0 +1,20 @@
+/* A non-modal invitation: the cube and its existing controls remain usable. */
+#cube-return { position:fixed; z-index:45; bottom:max(20px,env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); width:min(400px,calc(100% - 32px)); padding:16px 16px 0; overflow:hidden; border:1px solid var(--border); border-radius:16px; background:var(--surface); color:var(--text); box-shadow:0 8px 32px #00000018; animation:cubeReturnIn .22s ease both; }
+#cube-return[hidden], body.timer-mode #cube-return { display:none; }
+.cube-return-copy { display:flex; align-items:center; gap:11px; }
+.cube-return-icon { display:flex; flex:none; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:var(--soft); color:var(--accent); }
+.cube-return-icon svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.cube-return-title { margin:0; color:var(--text); font:500 14px 'Space Grotesk',sans-serif; }
+.cube-return-description { margin:3px 0 0; color:var(--secondary); font:400 12px/1.5 'Inter',sans-serif; }
+#cube-return-seconds { color:var(--text); font-weight:600; font-variant-numeric:tabular-nums; }
+.cube-return-actions { display:flex; gap:8px; margin:14px 0; }
+.cube-return-actions button { flex:1; min-width:0; min-height:44px; padding:8px 10px; border:1px solid var(--border); border-radius:9px; font:500 12px 'Inter',sans-serif; cursor:pointer; transition:background .16s ease,color .16s ease; }
+#cube-return-stay { background:transparent; color:var(--secondary); }
+#cube-return-stay:hover { background:var(--soft); color:var(--text); }
+#cube-return-now { display:flex; align-items:center; justify-content:center; gap:6px; background:var(--action); border-color:var(--action); color:var(--on-action); }
+#cube-return-now:hover { background:var(--action-hover); border-color:var(--action-hover); }
+:root #cube-return button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.cube-return-track { height:3px; margin:0 -16px; background:var(--soft); }
+#cube-return-progress { display:block; width:100%; height:100%; background:var(--accent); transform-origin:left; transition:transform .1s linear; }
+@keyframes cubeReturnIn { from { opacity:0; translate:0 6px; } to { opacity:1; translate:0 0; } }
+@media(prefers-reduced-motion:reduce) { #cube-return { animation:none; } #cube-return-progress, .cube-return-actions button { transition:none; } }
