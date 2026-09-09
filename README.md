@@ -1,57 +1,113 @@
+<div align="center">
+<img src="imgs/cube.png" alt="Cubo mágico 3D" width="140" />
+
 # Cubo Timer
 
-Aplicação estática de timer 3×3 e visualização de scrambles. Abra `index.html` no navegador ou sirva a pasta por HTTP. Não há etapa de build. Tailwind, fontes, Three.js e o gerador de scrambles são carregados por CDN.
+Timer minimalista para treinar solves de cubo mágico 3×3.
 
-## Organização MVC
+<p>
+<img src="https://img.shields.io/badge/HTML5-e34f26?style=flat-square&logo=html5&logoColor=white" alt="HTML5">
+    <img src="https://img.shields.io/badge/CSS3-1572b6?style=flat-square&logo=css3&logoColor=white" alt="CSS3">
+    <img src="https://img.shields.io/badge/JavaScript-f7df1e?style=flat-square&logo=javascript&logoColor=111827" alt="JavaScript">
+    <img src="https://img.shields.io/badge/Three.js-111827?style=flat-square&logo=threedotjs&logoColor=white" alt="Three.js">
+  </p>
+</div>
 
-```text
-index.html                       Estrutura HTML das views
-assets/
-  css/
-    app.css                      Layout, componentes e estados existentes
-    settings.css                 Temas, configurações e card de PR
-    resolution-mode.css          Modo resolução e ajuste à altura da tela
-    cube-return.css              Convite para voltar ao Timer após embaralhar
-    pr-confirm.css               Confirmação de atualização do PR salvo
-  js/
-    app.js                       Inicialização dos controllers
-    core/namespace.js            Namespace Cubo, sem dependências
-    config/                      Tailwind e restauração inicial do tema
-    models/                      Validação, regras de domínio e persistência
-    views/                       DOM, formatação, controles e cena Three.js
-    controllers/                 Eventos e coordenação dos fluxos
-    services/scramble-service.js  Worker, geração e fallback de scrambles
-imgs/                            Imagens e ícones da aplicação
+## ✨ Recursos
+
+- ⏱️ Timer WCA para solves 3×3;
+
+- 🔀 Geração e cópia de scrambles;
+
+- 🧊 Visualização 3D interativa do cubo;
+
+- ▶️ Modo sequência e passo a passo;
+
+- 📊 Histórico de tempos, melhor tempo e média de 5;
+
+- 🎯 Recorde pessoal e objetivo de tempo;
+
+- 🎨 Temas Light, Black e Blue;
+
+- 💾 Dados salvos localmente no navegador.
+
+## 🚀 Como usar
+
+Abra [`index.html`](index.html) no navegador.
+
+Não há instalação, dependências locais ou etapa de build. O projeto utiliza apenas **HTML, CSS e JavaScript**, com algumas bibliotecas carregadas por CDN.
+
+## 🎮 Controles
+
+| Ação | Como fazer |
+| --- | --- |
+| Preparar o timer | Segure `Espaço` |
+| Iniciar a solve | Solte `Espaço` |
+| Girar o cubo | Arraste sobre o cubo 3D |
+| Copiar o scramble | Clique no ícone de copiar |
+| Fechar configurações | Clique em fechar ou pressione `Esc` |
+
+## 🗂️ Estrutura
+
+```
+.
+├── index.html
+├── imgs/
+│   └── cube.png
+└── assets/
+    ├── css/
+    │   ├── app.css
+    │   ├── settings.css
+    │   ├── resolution-mode.css
+    │   ├── cube-return.css
+    │   └── pr-confirm.css
+    └── js/
+        ├── app.js
+        ├── core/
+        ├── config/
+        ├── models/
+        ├── views/
+        ├── controllers/
+        └── services/
 ```
 
-Os models não acessam o DOM. As views não acessam o localStorage. Os controllers coordenam as ações entre essas camadas, mantendo os estados transitórios de preparação, contagem e reprodução. A cena 3D está isolada em `cube-scene-view.js`; regras de movimentos ficam em `cube-model.js`.
+A aplicação segue uma organização inspirada em **MVC**:
 
-Scripts clássicos são carregados em ordem explícita no HTML, usando somente o namespace `Cubo`. Essa escolha mantém a abertura direta por `file://`, sem exigir um servidor para módulos JavaScript. O tema é restaurado no `<head>` antes da primeira renderização; os controllers são inicializados após o HTML.
+- **Models:** regras de negócio, validação e persistência;
 
-## Dados locais
+- **Views:** interface, controles e cena 3D;
 
-- `cubo-embaralhado-times-v1`: histórico de tempos em milissegundos.
-- `cubo-embaralhado-settings-v1`: tema, modo resolução (`resolutionMode`), PR atual e objetivo em milissegundos.
+- **Controllers:** eventos e coordenação dos fluxos;
 
-As chaves e os formatos existentes foram preservados. O PR é definido pelo usuário e não é substituído automaticamente após uma solve. O aviso de novo PR compara os tempos na precisão exibida pelo timer.
+- **Services:** geração de scrambles.
 
-Ao salvar uma solve melhor que o PR configurado, um modal oferece “Adicionar” ou “Não”. A confirmação atualiza apenas o PR atual, com a mesma precisão dos campos de Configurações. Recusar ou fechar com Escape mantém o PR anterior; a solve já salva permanece no histórico em todos os casos. A apresentação está em `pr-confirm-view.js`, coordenada pelo controller de Configurações após o salvamento do Timer.
+## 💾 Dados locais
 
-O modo resolução vem desativado e fica disponível apenas no desktop (largura a partir de 1024 px), na aba Timer. Oculta o cabeçalho, mantém as abas e posiciona a mesma ação de Configurações no canto da janela. A composição ocupa a altura disponível. Em larguras menores, a opção é ocultada e o layout normal é restaurado, mantendo a preferência salva para quando a janela voltar ao desktop. Os estados de preparação, contagem e resultado mantêm sua apresentação original. A aba Cubo usa o layout normal mesmo com a preferência ativada.
+Os tempos e as configurações ficam no `localStorage` do navegador. A aplicação não possui backend e não exige conta.
 
-## Verificação manual
+| Chave | Conteúdo |
+| --- | --- |
+| `cubo-embaralhado-times-v1` | Histórico de tempos |
+| `cubo-embaralhado-settings-v1` | Tema, PR, objetivo e modo resolução |
 
-1. Troque entre Light, Black e Blue e recarregue a página.
-2. Configure PR e objetivo, experimente entradas inválidas e apague os dois valores para ocultar o card.
-3. Edite o objetivo pelo ícone do card e feche o modal com Escape; o foco retorna à ação de origem.
-4. Segure Espaço até o verde, solte, finalize e salve ou reinicie. Verifique que somente tempos melhores que o PR geram o aviso.
-5. Aplique um scramble no cubo e confira sequência automática, velocidade, pausa, continuação, passo a passo e rotação.
-6. Confira o card e as configurações em celular e desktop.
+## 🧪 Verificação rápida
 
-Nenhum arquivo de teste é necessário para executar a aplicação.
+- [ ] Alternar entre os três temas;
 
-## Retorno após embaralhar
+- [ ] Iniciar, finalizar e salvar uma solve;
 
-Ao terminar uma sequência no Cubo (automática ou passo a passo), o controller aguarda 1,5 segundo e exibe uma contagem de 5 segundos. “Ficar no cubo” cancela a transição; “Ir para o timer” antecipa a navegação. A troca usa a ação existente da aba Timer e não inicia a contagem de uma solve.
+- [ ] Gerar, copiar e aplicar um scramble;
 
-Reiniciar, iniciar outra sequência, entrar em rotação livre, abrir Configurações, mudar para o Timer ou ocultar a página cancela o retorno pendente. A apresentação fica em `cube-return-view.js`, e a temporização e o cancelamento em `cube-return-controller.js`.
+- [ ] Testar sequência automática e passo a passo;
+
+- [ ] Girar o cubo livremente;
+
+- [ ] Conferir histórico, PR e objetivo em diferentes tamanhos de tela.
+
+## 🤝 Contribuição
+
+Sugestões e melhorias são bem-vindas. Abra uma *issue* ou envie um Pull Request descrevendo sua alteração.
+
+<div align="center">
+<sub>Treine com foco. Melhore a cada solve.</sub>
+</div>
