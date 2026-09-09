@@ -14,6 +14,7 @@ Cubo.controllers.initTimer = function(){
   let activePress = false;
   let spacePressed = false;
   let saveFeedbackTimer = null;
+  let prConfirmationTimer = null;
   let runStart = 0;
   let finishedElapsed = 0;
   let raf = null;
@@ -71,6 +72,8 @@ Cubo.controllers.initTimer = function(){
   function tick(){ if(phase!=='running') return; display.textContent=format(currentElapsed()); raf=requestAnimationFrame(tick); }
 
   function resetTimer(){
+    clearTimeout(prConfirmationTimer);
+    prConfirmationTimer = null;
     Cubo.controllers.settings.clearFeedback();
     if(raf) cancelAnimationFrame(raf);
     if(holdTimer) clearTimeout(holdTimer);
@@ -84,6 +87,8 @@ Cubo.controllers.initTimer = function(){
     if(phase==='running'){ finishTimer(); return; }
     if(phase==='finished') return;
     if(phase!=='idle' || activePress) return;
+    clearTimeout(prConfirmationTimer);
+    prConfirmationTimer = null;
     activePress=true; phase='holding'; display.textContent='0.00'; status.textContent=''; setState('holding');
     holdTimer=setTimeout(()=>{
       holdTimer=null;
@@ -148,7 +153,8 @@ Cubo.controllers.initTimer = function(){
     button.addEventListener('pointerup',event=>event.stopPropagation());
   });
   saveResultButton.addEventListener('click',()=>{
-    if(phase!=='finished' || !finishedElapsed) return;
+    if(phase!=='finished' || !finishedElapsed || saveResultButton.disabled) return;
+    const savedElapsed = finishedElapsed;
     times.push(finishedElapsed); save();
     saveResultButton.disabled=true;
     saveResultButton.textContent='Salvo';
@@ -160,6 +166,11 @@ Cubo.controllers.initTimer = function(){
       scrambleAttempt.classList.add('is-hidden');
       scrambleSyncState.textContent='Solve salva — gere um novo scramble';
       scrambleSyncState.className='scramble-sync-state is-stale';
+      prConfirmationTimer = setTimeout(() => {
+        prConfirmationTimer = null;
+        if (phase !== 'idle' || document.hidden || !document.body.classList.contains('timer-mode') || document.querySelector('dialog[open]')) return;
+        Cubo.controllers.settings.onSolveSaved(savedElapsed);
+      }, 500);
     }, 280);
   });
   pad.addEventListener('pointerdown',e=>{
@@ -221,6 +232,10 @@ Cubo.controllers.initTimer = function(){
   });
   function select(mode){
     const timer=mode==='timer';
+    if (!timer) {
+      clearTimeout(prConfirmationTimer);
+      prConfirmationTimer = null;
+    }
     if(!timer && phase==='running') finishTimer();
     document.body.classList.toggle('timer-mode',timer);
     tabCube.setAttribute('aria-selected',String(!timer));

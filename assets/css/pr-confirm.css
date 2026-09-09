@@ -1,0 +1,30 @@
+#pr-confirm-dialog { width:min(380px,calc(100% - 32px)); max-height:calc(100dvh - 32px); margin:auto; padding:24px; overflow:auto; border:1px solid var(--border); border-radius:18px; background:var(--surface); color:var(--text); box-shadow:0 24px 80px #0004; }
+#pr-confirm-dialog::backdrop { background:#050d18a6; backdrop-filter:blur(4px); }
+#pr-confirm-dialog[open] { animation:prConfirmEnter .28s cubic-bezier(.2,.8,.2,1) both; }
+#pr-confirm-dialog[open]::backdrop { animation:prConfirmBackdropEnter .24s ease-out both; }
+@keyframes prConfirmEnter {
+  from { opacity:0; transform:translateY(10px) scale(.98); }
+  to { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes prConfirmBackdropEnter {
+  from { opacity:0; }
+  to { opacity:1; }
+}
+body:has(#pr-confirm-dialog[open]) { overflow:hidden; }
+.pr-confirm-icon { display:flex; align-items:center; justify-content:center; width:40px; height:40px; margin-bottom:14px; border-radius:50%; background:var(--soft); color:var(--accent); }
+.pr-confirm-icon svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+#pr-confirm-title { margin:0 0 10px; font:600 21px 'Space Grotesk',sans-serif; }
+#pr-confirm-description { margin:0; color:var(--secondary); font-size:13px; line-height:1.7; }
+#pr-confirm-time { color:var(--accent); font-weight:600; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.pr-confirm-note { margin:12px 0 0; color:var(--secondary); font-size:11px; line-height:1.5; }
+.pr-confirm-actions { display:flex; gap:10px; margin-top:22px; }
+.pr-confirm-actions button { flex:1; min-height:44px; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font:500 13px 'Inter',sans-serif; cursor:pointer; transition:background .16s ease; }
+#pr-confirm-no { background:transparent; color:var(--secondary); }
+#pr-confirm-no:hover { background:var(--soft); color:var(--text); }
+#pr-confirm-add { background:var(--action); border-color:var(--action); color:var(--on-action); }
+#pr-confirm-add:hover { background:var(--action-hover); border-color:var(--action-hover); }
+:root #pr-confirm-dialog button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+@media(prefers-reduced-motion:reduce) {
+  #pr-confirm-dialog[open], #pr-confirm-dialog[open]::backdrop { animation:none; }
+  .pr-confirm-actions button { transition:none; }
+}

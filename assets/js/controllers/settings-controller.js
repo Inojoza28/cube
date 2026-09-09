@@ -2,6 +2,7 @@ Cubo.controllers.initSettings = function() {
   'use strict';
   const model = Cubo.models.settings;
   const view = Cubo.views.createSettings();
+  const prConfirm = Cubo.views.createPrConfirm();
   const update = () => {
     view.render(model.get());
     view.persistence(model.save());
@@ -25,6 +26,17 @@ Cubo.controllers.initSettings = function() {
     onSolveFinished(elapsed) {
       view.clearFeedback();
       if (model.isPersonalRecord(elapsed)) view.showFeedback();
+    },
+    onSolveSaved(elapsed) {
+      const time = (elapsed / 1000).toFixed(2);
+      if (!model.isPersonalRecord(elapsed) || !model.parseTime(time).valid) return;
+      prConfirm.show(elapsed, () => {
+        if (!model.isPersonalRecord(elapsed)) return;
+        model.setTime('current', time);
+        view.populate(model.get());
+        view.validation('current', true);
+        update();
+      });
     }
   };
 };

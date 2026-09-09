@@ -12,6 +12,7 @@ assets/
     settings.css                 Temas, configurações e card de PR
     resolution-mode.css          Modo resolução e ajuste à altura da tela
     cube-return.css              Convite para voltar ao Timer após embaralhar
+    pr-confirm.css               Confirmação de atualização do PR salvo
   js/
     app.js                       Inicialização dos controllers
     core/namespace.js            Namespace Cubo, sem dependências
@@ -33,6 +34,8 @@ Scripts clássicos são carregados em ordem explícita no HTML, usando somente o
 - `cubo-embaralhado-settings-v1`: tema, modo resolução (`resolutionMode`), PR atual e objetivo em milissegundos.
 
 As chaves e os formatos existentes foram preservados. O PR é definido pelo usuário e não é substituído automaticamente após uma solve. O aviso de novo PR compara os tempos na precisão exibida pelo timer.
+
+Ao salvar uma solve melhor que o PR configurado, um modal oferece “Adicionar” ou “Não”. A confirmação atualiza apenas o PR atual, com a mesma precisão dos campos de Configurações. Recusar ou fechar com Escape mantém o PR anterior; a solve já salva permanece no histórico em todos os casos. A apresentação está em `pr-confirm-view.js`, coordenada pelo controller de Configurações após o salvamento do Timer.
 
 O modo resolução vem desativado e fica disponível apenas no desktop (largura a partir de 1024 px), na aba Timer. Oculta o cabeçalho, mantém as abas e posiciona a mesma ação de Configurações no canto da janela. A composição ocupa a altura disponível. Em larguras menores, a opção é ocultada e o layout normal é restaurado, mantendo a preferência salva para quando a janela voltar ao desktop. Os estados de preparação, contagem e resultado mantêm sua apresentação original. A aba Cubo usa o layout normal mesmo com a preferência ativada.
 
