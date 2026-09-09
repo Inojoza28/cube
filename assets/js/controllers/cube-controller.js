@@ -25,6 +25,7 @@ const {parseSequence,invertMove,STEP_INTERVAL,COMPLETE_VISIBLE_MS,COUNTDOWN_MS} 
   let pausedFreeLook = false;
   let sequenceSpeed = 1;
   const SPEED_OPTIONS = [1, 1.5, 2];
+  const FIRST_MOVE_DELAY_MS = 1000;
   const timerReturn = Cubo.controllers.createCubeReturn(() => appState === 'completed');
 
   const scene = Cubo.views.createCubeScene();
@@ -248,7 +249,9 @@ const {parseSequence,invertMove,STEP_INTERVAL,COMPLETE_VISIBLE_MS,COUNTDOWN_MS} 
   }
 
   async function runSequenceLoop(){
-    const token = playToken;
+    // A fresh token prevents an older start/resume delay from playing a move.
+    const token = ++playToken;
+    await new Promise(resolve => setTimeout(resolve, FIRST_MOVE_DELAY_MS));
     while (appState === 'playing' && idx < moves.length && token === playToken){
       const t0 = performance.now();
       animating = true;
