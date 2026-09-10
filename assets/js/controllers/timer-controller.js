@@ -18,6 +18,19 @@ Cubo.controllers.initTimer = function(){
   let runStart = 0;
   let finishedElapsed = 0;
   let raf = null;
+  const historyRemoval = Cubo.views.createHistoryRemoval(index => {
+    if (phase !== 'idle' || !Number.isInteger(index) || index < 0 || index >= times.length) return;
+    const elapsed = times[index];
+    historyRemoval.show(index, elapsed, () => {
+      if (times[index] !== elapsed) return false;
+      const remaining = Cubo.models.solves.removeAt(times, index);
+      try { Cubo.models.solves.save(remaining); }
+      catch { return false; }
+      times = remaining;
+      stats();
+      return true;
+    });
+  });
 
   function setScramble(value){
     scramble = value || makeFallback();

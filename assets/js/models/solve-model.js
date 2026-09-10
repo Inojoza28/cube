@@ -16,6 +16,10 @@ Cubo.models.solves = (() => {
     save(times) {
       localStorage.setItem(key, JSON.stringify(times));
     },
+    removeAt(times, index) {
+      if (!Number.isInteger(index) || index < 0 || index >= times.length) return times;
+      return times.filter((_, position) => position !== index);
+    },
     summarize(times) {
       const last5 = times.slice(-5);
       return {

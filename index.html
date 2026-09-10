@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="assets/css/resolution-mode.css">
 <link rel="stylesheet" href="assets/css/cube-return.css">
 <link rel="stylesheet" href="assets/css/pr-confirm.css">
+<link rel="stylesheet" href="assets/css/history-removal.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cubo Timer</title>
 <meta name="description" content="Cubo Timer: cronometre suas solves de cubo mágico 3×3, acompanhe scrambles WCA e organize seus tempos de forma simples e profissional.">
@@ -260,6 +261,13 @@
   <p id="settings-storage-status" role="status">Preferências salvas automaticamente neste navegador.</p>
 </dialog>
 <div id="pr-feedback" role="status" aria-live="polite" hidden>Novo PR!</div>
+<dialog id="history-remove-dialog" aria-labelledby="history-remove-title" aria-describedby="history-remove-description history-remove-time">
+  <h2 id="history-remove-title">Remover este tempo?</h2>
+  <p id="history-remove-time"></p>
+  <p id="history-remove-description">Este registro será removido do histórico e das estatísticas.</p>
+  <p id="history-remove-error" role="alert"></p>
+  <div class="history-remove-actions"><button id="history-remove-cancel" type="button" autofocus>Cancelar</button><button id="history-remove-confirm" type="button">Remover</button></div>
+</dialog>
 <dialog id="pr-confirm-dialog" aria-labelledby="pr-confirm-title" aria-describedby="pr-confirm-description">
   <span class="pr-confirm-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3h8v5a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 1v6m-4 3h8m-6-3h4"/></svg></span>
   <h2 id="pr-confirm-title">Atualizar seu PR?</h2>
@@ -291,6 +299,7 @@
 <script src="assets/js/views/cube-view.js"></script>
 <script src="assets/js/views/cube-return-view.js"></script>
 <script src="assets/js/views/timer-view.js"></script>
+<script src="assets/js/views/history-removal-view.js"></script>
 <script src="assets/js/controllers/settings-controller.js"></script>
 <script src="assets/js/controllers/cube-controller.js"></script>
 <script src="assets/js/controllers/cube-return-controller.js"></script>

@@ -40,7 +40,7 @@ const {format}=Cubo.models.solves;
     document.getElementById('stat-best').textContent=best===null?'—':format(best);
     document.getElementById('stat-ao5').textContent=ao5===null?'—':format(ao5);
     document.getElementById('stat-count').textContent=String(times.length);
-    historyEl.innerHTML='<div class="history-title"><span>Histórico:</span></div>' + (times.slice().reverse().map((t,i)=>`<div class="history-row"><span>#${times.length-i}</span><strong>${format(t)} s</strong></div>`).join('') || '<p class="text-[12px] text-muted py-3 text-center">Seus tempos aparecerão aqui.</p>');
+    historyEl.innerHTML='<div class="history-title"><span>Histórico:</span></div>' + (times.slice().reverse().map((t,i)=>`<button type="button" class="history-row" data-solve-index="${times.length-i-1}" aria-haspopup="dialog" aria-controls="history-remove-dialog" aria-label="Remover tempo #${times.length-i}: ${format(t)} segundos" title="Remover este tempo"><span>#${times.length-i}</span><strong>${format(t)} s</strong></button>`).join('') || '<p class="text-[12px] text-muted py-3 text-center">Seus tempos aparecerão aqui.</p>');
   }
   function setState(kind){
     document.body.classList.toggle('timer-running', kind==='running');
